@@ -166,7 +166,7 @@ export default function Register() {
                 }
               />
               {fieldErrors.emailError && (
-                <span class="text-xs text-red-600 ml-1">
+                <span className="text-xs text-red-600 ml-1">
                   {fieldErrors.emailError}
                 </span>
               )}
@@ -187,7 +187,7 @@ export default function Register() {
                 {showPasswordIcon}
               </div>
               {fieldErrors.passwordError && (
-                <span class="text-xs text-red-600 ml-1">
+                <span className="text-xs text-red-600 ml-1">
                   {fieldErrors.passwordError}
                 </span>
               )}
@@ -205,7 +205,7 @@ export default function Register() {
                 }
               />
               {fieldErrors.repeatedPasswordError && (
-                <span class="text-xs text-red-600 ml-1">
+                <span className="text-xs text-red-600 ml-1">
                   {fieldErrors.repeatedPasswordError}
                 </span>
               )}
@@ -222,7 +222,7 @@ export default function Register() {
                 }
               />
               {fieldErrors.nameError && (
-                <span class="text-xs text-red-600 ml-1">
+                <span className="text-xs text-red-600 ml-1">
                   {fieldErrors.nameError}
                 </span>
               )}
@@ -239,7 +239,7 @@ export default function Register() {
                 }
               />
               {fieldErrors.surnameError && (
-                <span class="text-xs text-red-600 ml-1">
+                <span className="text-xs text-red-600 ml-1">
                   {fieldErrors.surnameError}
                 </span>
               )}
@@ -256,7 +256,7 @@ export default function Register() {
                 }
               />
               {fieldErrors.phoneNumberError && (
-                <span class="text-xs text-red-600 ml-1">
+                <span className="text-xs text-red-600 ml-1">
                   {fieldErrors.phoneNumberError}
                 </span>
               )}

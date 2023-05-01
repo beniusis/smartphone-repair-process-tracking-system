@@ -1,6 +1,7 @@
 import NextAuth from "next-auth/next";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
+import bcrypt from "bcrypt";
 
 export const authOptions = {
   providers: [
@@ -14,9 +15,11 @@ export const authOptions = {
             email_address: credentials.email,
           },
         });
-        await prisma.$disconnect();
 
-        if (credentials.email === user.email_address && credentials.password === user.password) {
+        if (
+          credentials.email === user.email_address &&
+          bcrypt.compareSync(credentials.password, user.password)
+        ) {
           return {
             id: user.id,
             name: user.name,

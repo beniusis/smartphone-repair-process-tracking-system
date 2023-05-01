@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import bcrypt from "bcrypt";
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
@@ -20,7 +21,15 @@ export default async function handler(req, res) {
 
     // if it doesn't exists, create the user and send the 201 response code with the message
     await prisma.user.create({
-      data: body,
+      data: {
+        name: body.name,
+        surname: body.surname,
+        email_address: body.email_address,
+        password: bcrypt.hashSync(body.password, 10),
+        phone_number: body.phone_number,
+        address: body.address,
+        role: body.role,
+      },
     });
     return res.status(201).send("User successfully created!");
   }

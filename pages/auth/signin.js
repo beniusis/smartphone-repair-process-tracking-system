@@ -124,7 +124,7 @@ export default function Signin() {
                 }
               />
               {fieldErrors.emailError && (
-                <span class="text-xs text-red-600 ml-1">
+                <span className="text-xs text-red-600 ml-1">
                   {fieldErrors.emailError}
                 </span>
               )}
@@ -142,7 +142,7 @@ export default function Signin() {
                 {showPasswordIcon}
               </div>
               {fieldErrors.passwordError && (
-                <span class="text-xs text-red-600 ml-1">
+                <span className="text-xs text-red-600 ml-1">
                   {fieldErrors.passwordError}
                 </span>
               )}
