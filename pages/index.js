@@ -1,5 +1,6 @@
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import Navbar from "@/components/Navbar";
 
 export default function Index() {
   const { data: session, status } = useSession();
@@ -10,17 +11,11 @@ export default function Index() {
   }
 
   if (session) {
-    console.log("session", session);
     return (
       <>
-        <h1>Protected Page</h1>
-        <p>You can view this page because you are signed in.</p>
-        <button
-          className="bg-red-500 p-2 rounded-xl text-white"
-          onClick={() => signOut()}
-        >
-          Atsijungti
-        </button>
+        <main className="min-h-screen">
+          <Navbar />
+        </main>
       </>
     );
   }

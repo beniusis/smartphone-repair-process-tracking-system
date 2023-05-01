@@ -16,7 +16,9 @@ export default async function handler(req, res) {
     if (checkIfUserExists !== null) {
       return res
         .status(200)
-        .send("User with that email address already exists!");
+        .send(
+          "Naudotojas tokiu el. paštu jau egzistuoja! Bandykite prisijungti."
+        );
     }
 
     // if it doesn't exists, create the user and send the 201 response code with the message
@@ -31,6 +33,8 @@ export default async function handler(req, res) {
         role: body.role,
       },
     });
-    return res.status(201).send("User successfully created!");
+    return res
+      .status(201)
+      .send("Paskyra sėkmingai sukurta! Galite prisijungti.");
   }
 }

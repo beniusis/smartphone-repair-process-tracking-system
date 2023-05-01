@@ -1,4 +1,5 @@
 import { IoEye, IoEyeOff } from "react-icons/io5";
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
@@ -92,6 +93,8 @@ export default function Register() {
         role: "client",
       });
 
+      console.log(response);
+
       if (response.status === 201) {
         router.push("/auth/signin");
       } else if (response.status === 200) {
@@ -109,7 +112,7 @@ export default function Register() {
   };
 
   const validatePhoneNumber = () => {
-    let regExp = /(86|\+3706)\d{3}\d{4}/;
+    let regExp = /(86|\+370)\d{3}\d{4}/;
     if (regExp.test(registrationInfo.phoneNumber)) {
       return true;
     }
@@ -134,7 +137,14 @@ export default function Register() {
               </svg>
             </span>
             <p className="ml-6">
-              Naudotojas tokiu el. paštu jau egzistuoja! Bandykite prisijungti.
+              Naudotojas tokiu el. pašto adresu egzistuoja! Bandykite{" "}
+              <a
+                href="/auth/signin"
+                className="font-semibold hover:text-red-400 hover:duration-300"
+              >
+                prisijungti
+              </a>
+              .
             </p>
           </div>
         </div>
@@ -195,7 +205,7 @@ export default function Register() {
                 className="p-2 rounded-xl border w-full text-slate-900 placeholder-slate-900 text-sm font-semibold border-none !outline-none"
                 type={showPassword ? "text" : "password"}
                 name="password"
-                placeholder="Pakartotinas slaptažodis"
+                placeholder="Pakartokite slaptažodis"
                 autoComplete="new-password"
                 onChange={({ target }) =>
                   setRegistrationInfo({
@@ -286,7 +296,24 @@ export default function Register() {
               </button>
             </form>
           </div>
+          <div className="md:block hidden w-1/2">
+            <Image
+              src="/phone-maintenance-2.svg"
+              width="500"
+              height="500"
+              alt="phone repair illustration 2"
+              priority
+            />
+          </div>
         </div>
+        <a
+          href="https://storyset.com/technology"
+          className="md:inline hidden absolute bottom-0 mb-2 text-xs"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Technology illustrations by <strong>Storyset</strong>
+        </a>
       </main>
     </>
   );
