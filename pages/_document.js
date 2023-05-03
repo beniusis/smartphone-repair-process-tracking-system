@@ -1,4 +1,6 @@
+import { ColorModeScript } from "@chakra-ui/react";
 import { Html, Head, Main, NextScript } from "next/document";
+import theme from "@/lib/theme";
 
 export default function Document() {
   return (
@@ -7,6 +9,7 @@ export default function Document() {
         <link rel="icon" type="image/xml+svg" href="icon.svg" />
       </Head>
       <body>
+        <ColorModeScript initialColorMode={theme.config.initialColorMode} />
         <Main />
         <NextScript />
       </body>

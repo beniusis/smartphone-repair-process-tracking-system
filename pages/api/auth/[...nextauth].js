@@ -45,10 +45,10 @@ export const authOptions = {
     },
     session: ({ session, token }) => {
       if (token) {
-        session.user_id = token.id;
-        session.user_name = token.name;
-        session.user_surname = token.surname;
-        session.user_role = token.role;
+        session.id = token.id;
+        session.name = token.name;
+        session.surname = token.surname;
+        session.role = token.role;
       }
 
       return session;
