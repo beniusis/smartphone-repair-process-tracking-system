@@ -26,7 +26,10 @@ export async function middleware(req) {
   }
 
   if (url.includes("/users") && token?.role !== "administrator") {
-    console.log("a");
+    return NextResponse.redirect(new URL("/", url));
+  }
+
+  if (url.includes("/reservation") && token?.role !== "client") {
     return NextResponse.redirect(new URL("/", url));
   }
 
@@ -39,7 +42,9 @@ export const config = {
     "/auth/signin",
     "/register",
     "/repairs",
+    "/repair",
     "/users",
     "/reservation",
+    "/profile",
   ],
 };

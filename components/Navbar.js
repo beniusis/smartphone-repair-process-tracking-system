@@ -83,19 +83,21 @@ export default function Navbar() {
                 </a>
               </div>
 
-              <div>
-                <a
-                  className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-200 text-slate-900 hover:text-slate-700 border-l-4 border-transparent hover:border-slate-900 pr-6 hover:cursor-pointer"
-                  onClick={() => router.push("/reservation")}
-                >
-                  <span className="inline-flex justify-center items-center ml-4 fill-slate-900">
-                    <IoCalendarNumber className="w-5 h-5" />
-                  </span>
-                  <span className="ml-2 text-sm tracking-wide truncate">
-                    Rezervacija
-                  </span>
-                </a>
-              </div>
+              {session?.role === "client" && (
+                <div>
+                  <a
+                    className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-200 text-slate-900 hover:text-slate-700 border-l-4 border-transparent hover:border-slate-900 pr-6 hover:cursor-pointer"
+                    onClick={() => router.push("/reservation")}
+                  >
+                    <span className="inline-flex justify-center items-center ml-4 fill-slate-900">
+                      <IoCalendarNumber className="w-5 h-5" />
+                    </span>
+                    <span className="ml-2 text-sm tracking-wide truncate">
+                      Rezervacija
+                    </span>
+                  </a>
+                </div>
+              )}
 
               <div className="px-5 pt-5">
                 <div className="flex flex-row items-center h-8">
@@ -194,19 +196,21 @@ export default function Navbar() {
               </a>
             </div>
 
-            <div>
-              <a
-                className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-200 text-slate-900 hover:text-slate-700 border-l-4 border-transparent hover:border-slate-900 pr-6 hover:cursor-pointer"
-                onClick={() => router.push("/reservation")}
-              >
-                <span className="inline-flex justify-center items-center ml-4 fill-slate-900">
-                  <IoCalendarNumber className="w-5 h-5" />
-                </span>
-                <span className="ml-2 text-sm tracking-wide truncate">
-                  Rezervacija
-                </span>
-              </a>
-            </div>
+            {session?.role === "client" && (
+              <div>
+                <a
+                  className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-200 text-slate-900 hover:text-slate-700 border-l-4 border-transparent hover:border-slate-900 pr-6 hover:cursor-pointer"
+                  onClick={() => router.push("/reservation")}
+                >
+                  <span className="inline-flex justify-center items-center ml-4 fill-slate-900">
+                    <IoCalendarNumber className="w-5 h-5" />
+                  </span>
+                  <span className="ml-2 text-sm tracking-wide truncate">
+                    Rezervacija
+                  </span>
+                </a>
+              </div>
+            )}
 
             <div className="px-5 pt-5">
               <div className="flex flex-row items-center h-8">

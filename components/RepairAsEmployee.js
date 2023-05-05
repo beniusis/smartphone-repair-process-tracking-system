@@ -6,9 +6,22 @@ import {
   Th,
   Tbody,
   Td,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  Select,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { format, formatInTimeZone } from "date-fns-tz";
+import { formatInTimeZone } from "date-fns-tz";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
@@ -16,20 +29,51 @@ import { useRouter } from "next/router";
 export default function RepairAsEmployee() {
   const { data: session } = useSession();
   const router = useRouter();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [employeeRepairs, setEmployeeRepairs] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [users, setUsers] = useState([]);
+  const [newRepairData, setNewRepairData] = useState({});
+  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
-    fetchEmployeeRepairs();
-  }, []);
+    fetchData();
+  }, [refresh]);
 
   const fetchEmployeeRepairs = async () => {
     const response = await axios.post("/api/repairs/by/employee", {
       employee_id: session?.id,
     });
     setEmployeeRepairs(response.data);
+  };
+
+  const fetchUsers = async () => {
+    const response = await axios.get("/api/clients");
+    setUsers(response.data);
+  };
+
+  const fetchData = async () => {
+    await fetchEmployeeRepairs();
+    await fetchUsers();
     setIsLoading(false);
+  };
+
+  const registerRepair = async () => {
+    // const response = await axios.post("/api/register/repair", {
+    //   title: newRepairData.title,
+    //   registered_at: new Date(),
+    //   total_cost: parseInt(newRepairData.total_cost),
+    //   status: "registered",
+    //   fk_user_client: newRepairData.fk_user_client,
+    //   fk_user_employee: session.id,
+    //   user_repair_fk_user_clientTouser: newRepairData.fk_user_client,
+    //   user_repair_fk_user_employeeTouser: session.id,
+    // });
+
+    // if (response.status === 201) {
+    //   setRefresh(true);
+    // }
   };
 
   const showStatus = (repair) => {
@@ -51,10 +95,69 @@ export default function RepairAsEmployee() {
       ) : (
         <div className="flex flex-col w-full gap-6">
           <div>
-            <button className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105 duration-300 relative mt-4 ml-4">
+            <button
+              className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105 duration-300 relative mt-4 ml-4"
+              onClick={onOpen}
+            >
               Registruoti remontą
             </button>
           </div>
+          <Modal isOpen={isOpen} onClose={onClose}>
+            <ModalOverlay />
+            <ModalContent>
+              <ModalHeader>Remonto registravimas</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
+                <FormControl>
+                  <FormLabel>Pavadinimas</FormLabel>
+                  <Input
+                    type="text"
+                    onChange={(e) =>
+                      setNewRepairData({
+                        ...newRepairData,
+                        title: e.target.value,
+                      })
+                    }
+                  />
+                  <FormLabel mt={4}>Kaina</FormLabel>
+                  <Input
+                    type="number"
+                    onChange={(e) =>
+                      setNewRepairData({
+                        ...newRepairData,
+                        total_cost: e.target.value,
+                      })
+                    }
+                  />
+                  <FormLabel mt={4}>Klientas</FormLabel>
+                  <Select
+                    placeholder=""
+                    onChange={(e) =>
+                      setNewRepairData({
+                        ...newRepairData,
+                        fk_user_client: e.target.value,
+                      })
+                    }
+                  >
+                    {users.map((user) => (
+                      <option value={user.id} key={user.id}>
+                        {user.name} {user.surname}
+                      </option>
+                    ))}
+                  </Select>
+                </FormControl>
+              </ModalBody>
+
+              <ModalFooter>
+                <Button
+                  colorScheme="green"
+                  onClick={() => registerRepair()}
+                >
+                  Registruoti
+                </Button>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
           <TableContainer overflowX="hidden">
             <Table size="sm">
               <Thead>
@@ -89,11 +192,13 @@ export default function RepairAsEmployee() {
                         "Nepradėta"}
                     </Td>
                     <Td>
-                      {formatInTimeZone(
-                        repair.estimated_time,
-                        "UTC",
-                        "yyyy-MM-dd kk:mm"
-                      )}
+                      {(repair.estimated_time !== null &&
+                        formatInTimeZone(
+                          repair.estimated_time,
+                          "UTC",
+                          "yyyy-MM-dd kk:mm"
+                        )) ||
+                        "Nenurodyta"}
                     </Td>
                     <Td>{showStatus(repair)}</Td>
                     <Td>{repair.total_cost}</Td>
@@ -103,9 +208,6 @@ export default function RepairAsEmployee() {
                         onClick={() => router.push("/repair/" + repair.id)}
                       >
                         Peržiūrėti
-                      </button>
-                      <button className="border border-slate-900 text-slate-900 rounded-xl py-2 px-4 hover:scale-105">
-                        Pasiūlyti
                       </button>
                     </Td>
                   </Tr>

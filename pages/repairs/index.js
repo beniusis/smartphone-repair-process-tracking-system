@@ -14,7 +14,7 @@ export default function Repairs() {
         <div className="w-full">
           {session?.role === "client" && <RepairAsClient />}
           {session?.role === "employee" && <RepairAsEmployee />}
-          {session?.role === "client" && <RepairAsAdministrator />}
+          {session?.role === "administrator" && <RepairAsAdministrator />}
         </div>
       </main>
     </>

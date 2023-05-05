@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { authOptions } from "@/pages/api/auth/[...nextauth]";
+import { authOptions } from "../../auth/[...nextauth]";
 import { getServerSession } from "next-auth";
 
 export default async function handler(req, res) {
@@ -14,12 +14,12 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "POST") {
-    const repairsByEmployee = await prisma.repair.findMany({
-      where: {
-        fk_user_employee: req.body.employee_id,
-      },
+    await prisma.repair.create({
+      data: req.body,
     });
 
-    return res.status(200).send(repairsByEmployee);
+    return res
+      .status(201)
+      .json({ message: "Remontas sėkmingai užregistruotas!" });
   }
 }

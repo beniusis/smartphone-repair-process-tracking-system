@@ -11,8 +11,10 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { formatInTimeZone } from "date-fns-tz";
+import { useSession } from "next-auth/react";
 
 export default function Repair() {
+  const { data: session } = useSession();
   const router = useRouter();
   const repair_id = router.query.id;
 
@@ -94,31 +96,41 @@ export default function Repair() {
           <div className="w-full p-4">
             <FormControl maxWidth="xs">
               <FormLabel>Pavadinimas</FormLabel>
-              <Input
-                type="text"
-                value={repairData.title}
-                onChange={(e) => setRepairData({ title: e.target.value })}
-              />
-              <FormLabel mt={4}>Būsena</FormLabel>
-              <Select
-                variant="filled"
-                placeholder={checkSelectedStatus()}
-                defaultValue={repairData.status}
-                onChange={(e) => {
-                  setRepairData({ ...repairData, status: e.target.value });
-                  setChangedStatus(e.target.value);
-                }}
-              >
-                {status.map((status) => {
-                  if (status.LT !== checkSelectedStatus()) {
-                    return (
-                      <option value={status.EN} key={status.EN}>
-                        {status.LT}
-                      </option>
-                    );
+              {session?.role === "employee" ? (
+                <Input
+                  type="text"
+                  value={repairData.title}
+                  onChange={(e) =>
+                    setRepairData({ ...repairData, title: e.target.value })
                   }
-                })}
-              </Select>
+                />
+              ) : (
+                <Text>{repairData.title}</Text>
+              )}
+              <FormLabel mt={4}>Būsena</FormLabel>
+              {session?.role === "employee" ? (
+                <Select
+                  variant="filled"
+                  placeholder={checkSelectedStatus()}
+                  defaultValue={repairData.status}
+                  onChange={(e) => {
+                    setRepairData({ ...repairData, status: e.target.value });
+                    setChangedStatus(e.target.value);
+                  }}
+                >
+                  {status.map((status) => {
+                    if (status.LT !== checkSelectedStatus()) {
+                      return (
+                        <option value={status.EN} key={status.EN}>
+                          {status.LT}
+                        </option>
+                      );
+                    }
+                  })}
+                </Select>
+              ) : (
+                <Text>{checkSelectedStatus()}</Text>
+              )}
               <FormLabel mt={4}>Remontas užregistruotas</FormLabel>
               <Text>
                 {formatInTimeZone(
@@ -127,7 +139,8 @@ export default function Repair() {
                   "yyyy-MM-dd kk:mm"
                 )}
               </Text>
-              {repairData.status === "in_progress" && (
+              {(repairData.status === "in_progress" ||
+                repairData.status === "finished") && (
                 <>
                   {repairData.started_at !== null && (
                     <div>
@@ -147,82 +160,92 @@ export default function Repair() {
                   )}
                 </>
               )}
+              {repairData.status === "finished" &&
+                repairData.started_at !== null && (
+                  <div>
+                    <FormLabel mt={4}>Remontas baigtas</FormLabel>
+                    {formatInTimeZone(
+                      repairData.finished_at,
+                      "UTC",
+                      "yyyy-MM-dd kk:mm"
+                    ) || ""}
+                  </div>
+                )}
               <FormLabel mt={4}>Kaina</FormLabel>
               <Text>{repairData.total_cost} &euro;</Text>
-              {repairData.status === "in_progress" &&
+              {repairData.status === "finished" &&
                 repairData.started_at !== null && (
                   <>
                     <FormLabel mt={4}>Įvertinimas</FormLabel>
-                    <Text>Įvertis: {repairData.rating}</Text>
-                    <Text>Atsiliepimas: {repairData.review}</Text>
+                    <Text>
+                      Įvertis:{" "}
+                      <strong>{repairData.rating || "neįvertinta"}</strong>
+                    </Text>
+                    <Text>
+                      Atsiliepimas:{" "}
+                      <strong>{repairData.review || "nėra"}</strong>
+                    </Text>
                   </>
                 )}
-              {changedStatus === "in_progress" && (
-                <div>
-                  <FormLabel mt={4}>Numatoma suremontuoti iki</FormLabel>
-                  <input
-                    type="datetime-local"
-                    defaultValue={new Date().toLocaleTimeString("lt-LT", {
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                    min={new Date().toLocaleTimeString("lt-LT", {
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                    max={lastDayOfYear().toLocaleString("lt-LT", {
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                    onChange={({ target }) => {
-                      setRepairData({
-                        ...repairData,
-                        estimated_time: new Date(
-                          new Date(target.valueAsNumber).toLocaleDateString(
-                            "lt-LT",
-                            {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              second: "2-digit",
-                              timeZone: "UTC",
-                            }
-                          )
-                        ),
-                      });
-                      console.log(
-                        new Date(
-                          new Date(target.valueAsNumber).toLocaleDateString(
-                            "lt-LT",
-                            {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              second: "2-digit",
-                              timeZone: "UTC",
-                            }
-                          )
-                        )
-                      );
-                    }}
-                  />
-                </div>
-              )}
+              {changedStatus === "in_progress" &&
+                repairData.started_at === null && (
+                  <div>
+                    <FormLabel mt={4}>Numatoma suremontuoti iki</FormLabel>
+                    <input
+                      type="datetime-local"
+                      defaultValue={new Date().toLocaleTimeString("lt-LT", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                      min={new Date().toLocaleTimeString("lt-LT", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                      max={lastDayOfYear().toLocaleString("lt-LT", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                      onChange={({ target }) => {
+                        setRepairData({
+                          ...repairData,
+                          estimated_time: new Date(
+                            new Date(target.valueAsNumber).toLocaleDateString(
+                              "lt-LT",
+                              {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                                timeZone: "UTC",
+                              }
+                            )
+                          ),
+                        });
+                      }}
+                    />
+                  </div>
+                )}
               <div className="flex flex-row gap-4">
-                <Button
-                  colorScheme="green"
-                  mt={4}
-                  onClick={() => updateRepairData()}
-                >
-                  Išsaugoti
-                </Button>
+                {session?.role === "employee" && (
+                  <Button
+                    colorScheme="green"
+                    mt={4}
+                    onClick={() => updateRepairData()}
+                  >
+                    Išsaugoti
+                  </Button>
+                )}
                 <Button colorScheme="red" mt={4} onClick={() => router.back()}>
                   Grįžti atgal
                 </Button>

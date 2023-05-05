@@ -43,8 +43,8 @@ model repair {
 
 model reservation {
   id            Int       @id @default(autoincrement())
-  date          String?   @db.VarChar(10)
-  time          String?   @db.VarChar(5)
+  date          DateTime? @db.Date
+  time          DateTime? @db.Time()
   fk_user       Int
   user          user      @relation(fields: [fk_user], references: [id], onUpdate: Restrict, map: "reservation_ibfk_1")
 
@@ -53,8 +53,8 @@ model reservation {
 
 model reservation_hours {
   id           Int  @id @default(autoincrement())
-  opening_time Int?
-  closing_time Int?
+  opening_time DateTime? @db.Time()
+  closing_time DateTime? @db.Time()
   interval     Int?
 }
 

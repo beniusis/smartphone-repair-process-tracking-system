@@ -150,7 +150,7 @@ export default function Register() {
         </div>
       )}
       <main className="min-h-screen flex items-center justify-center bg-white">
-        <div className="bg-gray-100 flex rounded-2xl drop-shadow-md max-w-3xl p-5 items-center">
+        <div className="bg-gray-100 flex rounded-2xl drop-shadow-md max-w-3xl p-5 items-center space-x-10">
           <div className="px-8">
             <h2 className="font-bold text-2xl text-slate-900 text-center">
               Registracija
@@ -205,7 +205,7 @@ export default function Register() {
                 className="p-2 rounded-xl border w-full text-slate-900 placeholder-slate-900 text-sm font-semibold border-none !outline-none"
                 type={showPassword ? "text" : "password"}
                 name="password"
-                placeholder="Pakartokite slaptažodis"
+                placeholder="Pakartokite slaptažodį"
                 autoComplete="new-password"
                 onChange={({ target }) =>
                   setRegistrationInfo({

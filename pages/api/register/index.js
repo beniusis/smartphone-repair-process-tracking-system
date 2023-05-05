@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     // if it does exist - send a 400 response code with the message
     if (checkIfUserExists !== null) {
       return res
-        .status(200)
+        .status(400)
         .send(
           "Naudotojas tokiu el. paštu jau egzistuoja! Bandykite prisijungti."
         );
