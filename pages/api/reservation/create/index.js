@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import { authOptions } from "../auth/[...nextauth]";
+import { authOptions } from "../../auth/[...nextauth]";
 import { getServerSession } from "next-auth";
+import execute from "@/lib/db/db";
 
 export default async function handler(req, res) {
   const session = await getServerSession(req, res, authOptions);
@@ -9,12 +10,16 @@ export default async function handler(req, res) {
     return res.status(401).json({ message: "You must be logged in." });
   }
 
-  if (session?.role !== "administrator") {
+  if (session?.role !== "client") {
     return res.status(403).json({ message: "You have no rights to do this!" });
   }
 
   if (req.method === "POST") {
-    const allRepairs = await prisma.repair.findMany();
-    return res.status(200).send(allRepairs);
+    await execute({
+      query: "INSERT INTO reservation (date, time, fk_user) VALUES(?, ?, ?)",
+      values: [req.body.date, req.body.time, req.body.fk_user],
+    });
+
+    return res.status(201).json({ message: "Remontas sėkmingai rezervuotas!" });
   }
 }

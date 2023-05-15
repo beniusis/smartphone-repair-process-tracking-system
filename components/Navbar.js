@@ -6,6 +6,7 @@ import {
   IoHome,
   IoBuild,
   IoCalendarNumber,
+  IoTime,
   IoLogOut,
 } from "react-icons/io5";
 import { FaUsers } from "react-icons/fa";
@@ -122,6 +123,21 @@ export default function Navbar() {
                   </a>
                 </div>
               )}
+              {session?.role === "administrator" && (
+                <div>
+                  <a
+                    className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-200 text-slate-900 hover:text-slate-700 border-l-4 border-transparent hover:border-slate-900 pr-6 hover:cursor-pointer"
+                    onClick={() => router.push("/business-hours")}
+                  >
+                    <span className="inline-flex justify-center items-center ml-4 fill-slate-900">
+                      <IoTime className="w-5 h-5" />
+                    </span>
+                    <span className="ml-2 text-sm tracking-wide truncate">
+                      Darbo laikas
+                    </span>
+                  </a>
+                </div>
+              )}
               <div>
                 <a
                   className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-200 text-slate-900 hover:text-slate-700 border-l-4 border-transparent hover:border-slate-900 pr-6 hover:cursor-pointer"
@@ -231,6 +247,22 @@ export default function Navbar() {
                   </span>
                   <span className="ml-2 text-sm tracking-wide truncate">
                     Naudotojai
+                  </span>
+                </a>
+              </div>
+            )}
+
+            {session?.role === "administrator" && (
+              <div>
+                <a
+                  className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-200 text-slate-900 hover:text-slate-700 border-l-4 border-transparent hover:border-slate-900 pr-6 hover:cursor-pointer"
+                  onClick={() => router.push("/business-hours")}
+                >
+                  <span className="inline-flex justify-center items-center ml-4 fill-slate-900">
+                    <IoTime className="w-5 h-5" />
+                  </span>
+                  <span className="ml-2 text-sm tracking-wide truncate">
+                    Darbo laikas
                   </span>
                 </a>
               </div>

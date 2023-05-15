@@ -21,11 +21,19 @@ export async function middleware(req) {
     return NextResponse.redirect(new URL("/", url));
   }
 
+  if (url.includes("/repairs") && token) {
+    return NextResponse.next();
+  }
+
   if (url.includes("/register") && token) {
     return NextResponse.redirect(new URL("/", url));
   }
 
   if (url.includes("/users") && token?.role !== "administrator") {
+    return NextResponse.redirect(new URL("/", url));
+  }
+
+  if (url.includes("/business-hours") && token?.role !== "administrator") {
     return NextResponse.redirect(new URL("/", url));
   }
 
@@ -42,9 +50,10 @@ export const config = {
     "/auth/signin",
     "/register",
     "/repairs",
-    "/repair",
+    "/repair/:path",
     "/users",
     "/reservation",
     "/profile",
+    "/business-hours",
   ],
 };

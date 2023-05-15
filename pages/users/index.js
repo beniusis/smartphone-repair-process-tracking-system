@@ -18,6 +18,7 @@ import {
   useDisclosure,
   Button,
   Select,
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -26,6 +27,8 @@ export default function Users() {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState({});
   const [selectedRole, setSelectedRole] = useState("");
+  const toast = useToast();
+  const [refresh, setRefresh] = useState(false);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -37,7 +40,7 @@ export default function Users() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [refresh]);
 
   const fetchUsers = async () => {
     const response = await axios.get("/api/users");
@@ -49,7 +52,26 @@ export default function Users() {
       id: userId,
       role: newRole,
     });
-    console.log(response);
+
+    if (response.status === 200) {
+      setRefresh(!refresh);
+      toast({
+        title: "Naudotojo rolė sėkmingai pakeista!",
+        status: "success",
+        position: "top-right",
+        duration: 5000,
+        isClosable: true,
+      });
+      onClose();
+    } else {
+      toast({
+        title: "Įvyko klaida! Bandykite iš naujo.",
+        status: "error",
+        position: "top-right",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   const checkSelectedRole = () => {
@@ -132,10 +154,7 @@ export default function Users() {
               <Button
                 colorScheme="green"
                 mr={3}
-                onClick={() => {
-                  updateUserRole(selectedUser.id, selectedRole);
-                  onClose();
-                }}
+                onClick={() => updateUserRole(selectedUser.id, selectedRole)}
               >
                 Išsaugoti
               </Button>

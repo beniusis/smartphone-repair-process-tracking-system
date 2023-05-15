@@ -10,8 +10,6 @@
   },
   "dependencies": {
     "@chakra-ui/react": "^2.6.1",
-    "@emotion/react": "^11.10.8",
-    "@emotion/styled": "^11.10.8",
     "@prisma/client": "^4.13.0",
     "autoprefixer": "10.4.14",
     "axios": "^1.4.0",
@@ -22,11 +20,13 @@
     "framer-motion": "^10.12.7",
     "next": "13.3.2",
     "next-auth": "^4.22.1",
+    "nodemailer": "^6.9.2",
     "postcss": "8.4.23",
     "react": "18.2.0",
     "react-calendar": "^4.2.1",
     "react-dom": "18.2.0",
     "react-icons": "^4.8.0",
+    "serverless-mysql": "^1.5.5",
     "tailwindcss": "3.3.2"
   },
   "devDependencies": {

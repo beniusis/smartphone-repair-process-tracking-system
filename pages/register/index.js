@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
+import { useToast } from "@chakra-ui/react";
 
 export default function Register() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function Register() {
     surnameError: "",
     phoneNumberError: "",
   });
-  const [userExists, setUserExists] = useState(false);
+  const toast = useToast();
 
   const openLoginView = (e) => {
     e.preventDefault();
@@ -83,22 +84,37 @@ export default function Register() {
           "* Netinkamas telefono numeris! Tinkami formatai: 860000000 arba +37060000000",
       });
     } else {
-      const response = await axios.post("/api/register", {
-        name: registrationInfo.name,
-        surname: registrationInfo.surname,
-        email_address: registrationInfo.email,
-        password: registrationInfo.password,
-        phone_number: registrationInfo.phoneNumber,
-        address: registrationInfo.address || null,
-        role: "client",
-      });
+      let response;
+      try {
+        response = await axios.post("/api/register", {
+          name: registrationInfo.name,
+          surname: registrationInfo.surname,
+          email_address: registrationInfo.email,
+          password: registrationInfo.password,
+          phone_number: registrationInfo.phoneNumber,
+          address: registrationInfo.address || null,
+          role: "client",
+        });
 
-      console.log(response);
-
-      if (response.status === 201) {
-        router.push("/auth/signin");
-      } else if (response.status === 200) {
-        setUserExists(true);
+        if (response.status === 201) {
+          toast({
+            title:
+              "Naudotojo paskyra sėkmingai sukurta! Bandykite prisijungti.",
+            status: "success",
+            position: "top-right",
+            duration: 5000,
+            isClosable: true,
+          });
+          router.push("/auth/signin");
+        }
+      } catch (error) {
+        toast({
+          title: `Naudotojas tokiu el. pašto adresu jau egzistuoja! Bandykite prisijungti.`,
+          status: "error",
+          position: "top-right",
+          duration: 5000,
+          isClosable: true,
+        });
       }
     }
   };
@@ -121,34 +137,6 @@ export default function Register() {
 
   return (
     <>
-      {userExists && (
-        <div className="flex justify-center p-2 items-center">
-          <div
-            className="relative px-4 py-3 leading-normal text-red-700 bg-red-100 rounded-lg max-w-xl"
-            role="alert"
-          >
-            <span className="absolute inset-y-0 left-0 flex items-center ml-4">
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                <path
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                  fillRule="evenodd"
-                ></path>
-              </svg>
-            </span>
-            <p className="ml-6">
-              Naudotojas tokiu el. pašto adresu egzistuoja! Bandykite{" "}
-              <a
-                href="/auth/signin"
-                className="font-semibold hover:text-red-400 hover:duration-300"
-              >
-                prisijungti
-              </a>
-              .
-            </p>
-          </div>
-        </div>
-      )}
       <main className="min-h-screen flex items-center justify-center bg-white">
         <div className="bg-gray-100 flex rounded-2xl drop-shadow-md max-w-3xl p-5 items-center space-x-10">
           <div className="px-8">

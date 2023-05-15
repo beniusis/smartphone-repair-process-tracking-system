@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { authOptions } from "../auth/[...nextauth]";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { getServerSession } from "next-auth";
 
 export default async function handler(req, res) {
@@ -9,12 +9,18 @@ export default async function handler(req, res) {
     return res.status(401).json({ message: "You must be logged in." });
   }
 
-  if (session?.role !== "administrator") {
-    return res.status(403).json({ message: "You have no rights to do this!" });
-  }
-
   if (req.method === "POST") {
-    const allRepairs = await prisma.repair.findMany();
-    return res.status(200).send(allRepairs);
+    await prisma.offer.update({
+      data: {
+        status: req.body.status,
+      },
+      where: {
+        id: req.body.offer_id,
+      },
+    });
+
+    return res
+      .status(200)
+      .json({ message: "Remonto pasiūlymo būsena sėkmingai pakeista!" });
   }
 }

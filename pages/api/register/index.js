@@ -3,38 +3,36 @@ import bcrypt from "bcrypt";
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
-    const body = req.body;
-
     // check whether the user with the exact email address already exists
     const checkIfUserExists = await prisma.user.findFirst({
       where: {
-        email_address: body.email_address,
+        email_address: req.body.email_address,
       },
     });
 
-    // if it does exist - send a 400 response code with the message
-    if (checkIfUserExists !== null) {
+    // if it doesn't exist - create the user
+    // if it does exist - send response message with the code of 400
+    if (checkIfUserExists === null) {
+      await prisma.user.create({
+        data: {
+          name: req.body.name,
+          surname: req.body.surname,
+          email_address: req.body.email_address,
+          password: bcrypt.hashSync(req.body.password, 10),
+          phone_number: req.body.phone_number,
+          address: req.body.address,
+          role: req.body.role,
+        },
+      });
       return res
-        .status(400)
+        .status(201)
+        .send("Paskyra sėkmingai sukurta! Galite prisijungti.");
+    } else {
+      return res
+        .status(302)
         .send(
           "Naudotojas tokiu el. paštu jau egzistuoja! Bandykite prisijungti."
         );
     }
-
-    // if it doesn't exists, create the user and send the 201 response code with the message
-    await prisma.user.create({
-      data: {
-        name: body.name,
-        surname: body.surname,
-        email_address: body.email_address,
-        password: bcrypt.hashSync(body.password, 10),
-        phone_number: body.phone_number,
-        address: body.address,
-        role: body.role,
-      },
-    });
-    return res
-      .status(201)
-      .send("Paskyra sėkmingai sukurta! Galite prisijungti.");
   }
 }

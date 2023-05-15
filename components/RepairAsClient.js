@@ -129,7 +129,7 @@ export default function RepairAsEmployee() {
               </ModalFooter>
             </ModalContent>
           </Modal>
-          <TableContainer overflowX="hidden">
+          <TableContainer overflowX="hidden" maxWidth={"70%"}>
             <Table size="sm">
               <Thead>
                 <Tr>

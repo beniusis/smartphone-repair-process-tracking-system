@@ -9,12 +9,13 @@ export default async function handler(req, res) {
     return res.status(401).json({ message: "You must be logged in." });
   }
 
-  if (session?.role !== "administrator") {
-    return res.status(403).json({ message: "You have no rights to do this!" });
-  }
-
   if (req.method === "POST") {
-    const allRepairs = await prisma.repair.findMany();
-    return res.status(200).send(allRepairs);
+    const offer = await prisma.offer.findUnique({
+      where: {
+        id: req.body.offer_id,
+      },
+    });
+
+    return res.status(200).send(offer);
   }
 }
