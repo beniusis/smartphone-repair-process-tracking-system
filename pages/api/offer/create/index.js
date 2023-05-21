@@ -32,20 +32,16 @@ export default async function handler(req, res) {
 
     let mailOptions = {
       from: "rokuuutas@gmail.com",
-      to: "atlepuha@inbox.lt",
+      to: req.body.client_email,
       subject: "(!) Jums pateiktas naujas remonto pasiūlymas",
       text: `Sveiki!
       Jums pateiktas naujas remonto ${req.body.repair_title} pasiūlymas! Peržiūrėkite jį ir patvirtinkite arba atmeskite.`,
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log("Email sent: " + info.response);
-      }
-    });
+    transporter.sendMail(mailOptions);
 
-    return res.status(201).json({ message: "Remonto pasiūlymas pateiktas!" });
+    return res
+      .status(201)
+      .json({ message: "Repair offer successfully proposed!" });
   }
 }

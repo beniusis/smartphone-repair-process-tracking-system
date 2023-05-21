@@ -21,6 +21,6 @@ export default async function handler(req, res) {
 
     return res
       .status(200)
-      .json({ message: "Remonto pasiūlymo būsena sėkmingai pakeista!" });
+      .json({ message: "Repair offer status has been successfully changed!" });
   }
 }

@@ -19,14 +19,10 @@ import {
   FormLabel,
   Input,
   Select,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
   useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { formatInTimeZone } from "date-fns-tz";
+import { format } from "date-fns-tz";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
@@ -39,8 +35,16 @@ export default function RepairAsEmployee() {
   const [employeeRepairs, setEmployeeRepairs] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [users, setUsers] = useState([]);
-  const [newRepairData, setNewRepairData] = useState({});
+  const [newRepairData, setNewRepairData] = useState({
+    title: "",
+    total_cost: "",
+    fk_user_client: 0,
+  });
   const [refresh, setRefresh] = useState(false);
+  const [errorFields, setErrorFields] = useState({
+    title: "",
+    cost: "",
+  });
   const toast = useToast();
 
   useEffect(() => {
@@ -66,37 +70,50 @@ export default function RepairAsEmployee() {
   };
 
   const registerRepair = async () => {
+    const currentDate = format(new Date(), "yyyy-MM-dd kk:mm", {
+      timeZone: "Europe/Vilnius",
+    });
     if (newRepairData.fk_user_client === null) {
       setNewRepairData({ ...newRepairData, fk_user_client: users[0].id });
-    }
-
-    const response = await axios.post("/api/register/repair", {
-      title: newRepairData.title,
-      registered_at: new Date(),
-      total_cost: parseInt(newRepairData.total_cost),
-      status: "registered",
-      fk_user_client: newRepairData.fk_user_client,
-      fk_user_employee: session.id,
-    });
-
-    if (response.status === 201) {
-      onClose();
-      setRefresh(!refresh);
-      toast({
-        title: "Remontas sėkmingai užregistruotas!",
-        status: "success",
-        position: "top-right",
-        duration: 5000,
-        isClosable: true,
+    } else if (newRepairData.title === "") {
+      setErrorFields({
+        ...errorFields,
+        title: "* Neįvestas remonto pavadinimas!",
+      });
+    } else if (newRepairData.total_cost === "") {
+      setErrorFields({
+        ...errorFields,
+        cost: "* Neįvesta remonto kaina!",
       });
     } else {
-      toast({
-        title: "Įvyko klaida! Bandykite iš naujo.",
-        status: "error",
-        position: "top-right",
-        duration: 5000,
-        isClosable: true,
+      const response = await axios.post("/api/register/repair", {
+        title: newRepairData.title,
+        registered_at: new Date(currentDate),
+        total_cost: parseFloat(newRepairData.total_cost),
+        status: "registered",
+        fk_user_client: newRepairData.fk_user_client || users[0].id,
+        fk_user_employee: session.id,
       });
+
+      if (response.status === 201) {
+        onClose();
+        setRefresh(!refresh);
+        toast({
+          title: "Remontas sėkmingai užregistruotas!",
+          status: "success",
+          position: "top-right",
+          duration: 5000,
+          isClosable: true,
+        });
+      } else {
+        toast({
+          title: "Įvyko klaida! Bandykite iš naujo.",
+          status: "error",
+          position: "top-right",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
     }
   };
 
@@ -143,6 +160,11 @@ export default function RepairAsEmployee() {
                       })
                     }
                   />
+                  {!newRepairData.title && (
+                    <span className="text-xs text-red-600 ml-1">
+                      {errorFields.title}
+                    </span>
+                  )}
                   <FormLabel mt={4}>Kaina</FormLabel>
                   <Input
                     type="number"
@@ -153,6 +175,11 @@ export default function RepairAsEmployee() {
                       })
                     }
                   />
+                  {!newRepairData.cost && (
+                    <span className="text-xs text-red-600 ml-1">
+                      {errorFields.cost}
+                    </span>
+                  )}
                   <FormLabel mt={4}>Klientas</FormLabel>
                   <Select
                     onChange={(e) =>
@@ -179,7 +206,7 @@ export default function RepairAsEmployee() {
             </ModalContent>
           </Modal>
           {employeeRepairs.length !== 0 && (
-            <TableContainer overflowX="hidden" maxWidth={"70%"}>
+            <TableContainer overflowX="hidden">
               <Table size="sm">
                 <Thead>
                   <Tr>
@@ -197,27 +224,33 @@ export default function RepairAsEmployee() {
                     <Tr key={repair.id}>
                       <Td>{repair.title}</Td>
                       <Td>
-                        {formatInTimeZone(
-                          repair.registered_at,
-                          "UTC",
-                          "yyyy-MM-dd kk:mm"
+                        {format(
+                          new Date(repair.registered_at),
+                          "yyyy-MM-dd kk:mm",
+                          {
+                            timeZone: "Europe/Vilnius",
+                          }
                         )}
                       </Td>
                       <Td>
                         {(repair.started_at !== null &&
-                          formatInTimeZone(
-                            repair.started_at,
-                            "UTC",
-                            "yyyy-MM-dd kk:mm"
+                          format(
+                            new Date(repair.started_at),
+                            "yyyy-MM-dd kk:mm",
+                            {
+                              timeZone: "Europe/Vilnius",
+                            }
                           )) ||
                           "Nepradėta"}
                       </Td>
                       <Td>
                         {(repair.estimated_time !== null &&
-                          formatInTimeZone(
-                            repair.estimated_time,
-                            "UTC",
-                            "yyyy-MM-dd kk:mm"
+                          format(
+                            new Date(repair.estimated_time),
+                            "yyyy-MM-dd kk:mm",
+                            {
+                              timeZone: "Europe/Vilnius",
+                            }
                           )) ||
                           "Nenurodyta"}
                       </Td>
@@ -238,7 +271,9 @@ export default function RepairAsEmployee() {
             </TableContainer>
           )}
           {employeeRepairs.length === 0 && (
-            <div className="ml-4 text-red-500">Jums priskirtų remontų nerasta</div>
+            <div className="p-4 text-red-500">
+              Jums priskirtų remontų nerasta
+            </div>
           )}
         </div>
       )}

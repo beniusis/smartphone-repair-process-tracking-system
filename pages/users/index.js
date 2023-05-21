@@ -21,9 +21,11 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 export default function Users() {
+  const { data: session } = useSession();
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState({});
   const [selectedRole, setSelectedRole] = useState("");
@@ -39,12 +41,21 @@ export default function Users() {
   ];
 
   useEffect(() => {
+    if (!session) {
+      return;
+    }
     fetchUsers();
-  }, [refresh]);
+  }, [refresh, session]);
 
   const fetchUsers = async () => {
     const response = await axios.get("/api/users");
-    setUsers(response.data);
+    const newUsers = response.data;
+    newUsers.forEach((user) => {
+      if (user.id === session?.id) {
+        newUsers.splice(newUsers.indexOf(user), 1);
+      }
+    });
+    setUsers(newUsers);
   };
 
   const updateUserRole = async (userId, newRole) => {
@@ -84,43 +95,45 @@ export default function Users() {
     <>
       <main className="min-h-screen flex flex-row">
         <Navbar />
-        <TableContainer overflowX="hidden" className="w-full">
-          <Table size="sm">
-            <Thead>
-              <Tr>
-                <Th>El. paštas</Th>
-                <Th>Vardas Pavardė</Th>
-                <Th>Adresas</Th>
-                <Th>Telefono numeris</Th>
-                <Th>Veiksmai</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {users?.map((user) => (
-                <Tr key={user.id}>
-                  <Td>{user.email_address}</Td>
-                  <Td>
-                    {user.name} {user.surname}
-                  </Td>
-                  <Td>{user.address}</Td>
-                  <Td>{user.phone_number}</Td>
-                  <Td>
-                    <button
-                      className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105 duration-300"
-                      value={JSON.stringify(user)}
-                      onClick={(e) => {
-                        onOpen();
-                        setSelectedUser(JSON.parse(e.target.value));
-                      }}
-                    >
-                      Privilegijos
-                    </button>
-                  </Td>
+        <div className="w-full">
+          <TableContainer overflowX="hidden">
+            <Table size="sm">
+              <Thead>
+                <Tr>
+                  <Th>El. paštas</Th>
+                  <Th>Vardas Pavardė</Th>
+                  <Th>Adresas</Th>
+                  <Th>Telefono numeris</Th>
+                  <Th>Veiksmai</Th>
                 </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
+              </Thead>
+              <Tbody>
+                {users?.map((user) => (
+                  <Tr key={user.id}>
+                    <Td>{user.email_address}</Td>
+                    <Td>
+                      {user.name} {user.surname}
+                    </Td>
+                    <Td>{user.address || "Nenurodytas"}</Td>
+                    <Td>{user.phone_number}</Td>
+                    <Td>
+                      <button
+                        className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105 duration-300"
+                        value={JSON.stringify(user)}
+                        onClick={(e) => {
+                          onOpen();
+                          setSelectedUser(JSON.parse(e.target.value));
+                        }}
+                      >
+                        Privilegijos
+                      </button>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
+        </div>
 
         <Modal isOpen={isOpen} onClose={onClose} closeOnOverlayClick={false}>
           <ModalOverlay />

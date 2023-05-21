@@ -24,15 +24,14 @@ export default async function handler(req, res) {
           role: req.body.role,
         },
       });
-      return res
-        .status(201)
-        .send("Paskyra sėkmingai sukurta! Galite prisijungti.");
+      return res.status(201).json({
+        message:
+          "User account has been successfully created! You can log in now.",
+      });
     } else {
-      return res
-        .status(302)
-        .send(
-          "Naudotojas tokiu el. paštu jau egzistuoja! Bandykite prisijungti."
-        );
+      return res.status(302).json({
+        message: "User with provided email already exists! Try to log in.",
+      });
     }
   }
 }

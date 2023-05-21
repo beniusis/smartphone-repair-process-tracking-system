@@ -20,6 +20,6 @@ export default async function handler(req, res) {
       values: [req.body.date, req.body.time, req.body.fk_user],
     });
 
-    return res.status(201).json({ message: "Remontas sėkmingai rezervuotas!" });
+    return res.status(201).json({ message: "Reservation created!" });
   }
 }

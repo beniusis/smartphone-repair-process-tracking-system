@@ -84,6 +84,14 @@ export default function Register() {
           "* Netinkamas telefono numeris! Tinkami formatai: 860000000 arba +37060000000",
       });
     } else {
+      setFieldErrors({
+        ...fieldErrors,
+        emailError: "",
+        passwordError: "",
+        repeatedPasswordError: "",
+        surnameError: "",
+        phoneNumberError: "",
+      });
       let response;
       try {
         response = await axios.post("/api/register", {
@@ -128,7 +136,7 @@ export default function Register() {
   };
 
   const validatePhoneNumber = () => {
-    let regExp = /(86|\+370)\d{3}\d{4}/;
+    let regExp = /(86|\+3706)\d{3}\d{4}/;
     if (regExp.test(registrationInfo.phoneNumber)) {
       return true;
     }
@@ -185,7 +193,7 @@ export default function Register() {
                 {showPasswordIcon}
               </div>
               {fieldErrors.passwordError && (
-                <span className="text-xs text-red-600 ml-1">
+                <span className="text-xs text-red-600 ml-1 w-[215px]">
                   {fieldErrors.passwordError}
                 </span>
               )}
@@ -254,7 +262,7 @@ export default function Register() {
                 }
               />
               {fieldErrors.phoneNumberError && (
-                <span className="text-xs text-red-600 ml-1">
+                <span className="text-xs text-red-600 ml-1 w-[215px]">
                   {fieldErrors.phoneNumberError}
                 </span>
               )}

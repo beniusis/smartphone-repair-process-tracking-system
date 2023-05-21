@@ -21,11 +21,15 @@ export async function middleware(req) {
     return NextResponse.redirect(new URL("/", url));
   }
 
+  if (url.includes("/register") && token) {
+    return NextResponse.redirect(new URL("/", url));
+  }
+
   if (url.includes("/repairs") && token) {
     return NextResponse.next();
   }
 
-  if (url.includes("/register") && token) {
+  if (url.includes("/reservation") && token?.role !== "client") {
     return NextResponse.redirect(new URL("/", url));
   }
 
@@ -36,12 +40,6 @@ export async function middleware(req) {
   if (url.includes("/business-hours") && token?.role !== "administrator") {
     return NextResponse.redirect(new URL("/", url));
   }
-
-  if (url.includes("/reservation") && token?.role !== "client") {
-    return NextResponse.redirect(new URL("/", url));
-  }
-
-  return NextResponse.next();
 }
 
 export const config = {
@@ -50,7 +48,7 @@ export const config = {
     "/auth/signin",
     "/register",
     "/repairs",
-    "/repair/:path",
+    "/repair",
     "/users",
     "/reservation",
     "/profile",

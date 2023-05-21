@@ -24,6 +24,8 @@ export default async function handler(req, res) {
       },
     });
 
-    return res.status(201).json({ message: "Remontas sėkmingai įvertintas!" });
+    return res
+      .status(201)
+      .json({ message: "Repair has been successfully evaluated" });
   }
 }

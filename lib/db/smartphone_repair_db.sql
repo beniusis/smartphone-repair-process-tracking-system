@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 05, 2023 at 07:57 AM
+-- Generation Time: May 21, 2023 at 09:37 PM
 -- Server version: 10.4.19-MariaDB
 -- PHP Version: 7.4.20
 
@@ -36,6 +36,13 @@ CREATE TABLE `offer` (
   `fk_repair` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `offer`
+--
+
+INSERT INTO `offer` (`id`, `title`, `description`, `cost`, `status`, `fk_repair`) VALUES
+(1, 'Apsauginio stikliuko uždėjimas', 'Galime papildomai uždėti ir apsauginį stikliuką. Ar to norėtumėte?', 9.99, 'proposed', 6);
+
 -- --------------------------------------------------------
 
 --
@@ -62,8 +69,8 @@ CREATE TABLE `repair` (
 --
 
 INSERT INTO `repair` (`id`, `title`, `registered_at`, `started_at`, `finished_at`, `estimated_time`, `total_cost`, `status`, `rating`, `review`, `fk_user_client`, `fk_user_employee`) VALUES
-(3, 'Išmaniojo telefono vidinio stiklo pakeitimas', '2023-05-03 17:59:00', '2023-05-04 08:10:00', '2023-05-04 09:40:00', '2023-05-04 10:00:00', 229.23, 'finished', NULL, NULL, 26, 29),
-(7, 'Remontas 2', '2023-05-03 17:40:17', NULL, NULL, NULL, 99.99, 'registered', NULL, NULL, 26, 29);
+(6, 'Vidinio stikliuko keitimas', '2023-05-21 19:02:00', '2023-05-21 19:06:00', NULL, '2023-05-23 07:00:00', 99.99, 'in_progress', NULL, NULL, 1, 2),
+(7, 'Telefono baterijos keitimas', '2023-05-21 19:13:00', '2023-05-21 19:13:00', '2023-05-21 19:14:00', '2023-05-22 06:00:00', 25.99, 'finished', NULL, NULL, 1, 2);
 
 -- --------------------------------------------------------
 
@@ -77,14 +84,6 @@ CREATE TABLE `reservation` (
   `date` date DEFAULT NULL,
   `time` time DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `reservation`
---
-
-INSERT INTO `reservation` (`id`, `fk_user`, `date`, `time`) VALUES
-(13, 26, '2023-05-02', '16:30:00'),
-(14, 30, '2023-05-04', '12:00:00');
 
 -- --------------------------------------------------------
 
@@ -104,21 +103,7 @@ CREATE TABLE `reservation_hours` (
 --
 
 INSERT INTO `reservation_hours` (`id`, `interval`, `opening_time`, `closing_time`) VALUES
-(1, 30, '08:00:00', '17:00:00');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `task`
---
-
-CREATE TABLE `task` (
-  `id` int(11) NOT NULL,
-  `title` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` char(11) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `fk_repair` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+(1, 10, '08:00:00', '17:00:00');
 
 -- --------------------------------------------------------
 
@@ -142,11 +127,9 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `name`, `surname`, `email_address`, `password`, `phone_number`, `address`, `role`) VALUES
-(26, 'Rokas', 'Beniušis', 'rokas@gmail.com', '$2b$10$rCvRXz5Dezwdef1ooMCaOuq7mzpeutPN8RDR9CvJCZoV8w5AjFjnS', '+37064735977', 'Kovo 11-osios g. 29, Kaunas', 'client'),
-(29, 'Tomas', 'Jablonskis', 'darbuotojas@gmail.com', '$2b$10$QYCxeK0W7vxP6CcIiDjXNOBlk2xLWNcbSyE1I7byYoYpOkLZNLhQG', '+37064735977', 'Šiaulių g. 19, Panevėžys', 'employee'),
-(30, 'Mantas', 'Jankauskas', 'admin@gmail.com', '$2b$10$IsAS1MzNTdybBvmXDeLLTeq.TH.oiD0WQnACMnU3oTwvTda8hANxe', '864735977', 'Vilniaus g. 19, Kaunas', 'administrator'),
-(31, 'Jonas', 'Jonauskas', 'test@gmail.com', '$2b$10$UiEZAua4qZAFndgpWNd86.b3Fnq7TJLmglniYhujbHE6cmJciWFm6', '+37064532611', NULL, 'client'),
-(32, 'Mantas', 'Jonauskas', 'testinis@outlook.com', '$2b$10$QhlNlNrDfk9aex9RTY8s2.iF8BydmKeP9sXlrhzQ6xVq8L8f3B7WW', '864619546', NULL, 'client');
+(1, 'Rokas', 'Beniušis', 'klientopaskyra@gmail.com', '$2b$10$Uo2ZBhjLI0w.ZILU.1Qowulj6Uh5m.279m0vYw9L/9uHJYtFVlSOe', '+37064735977', NULL, 'client'),
+(2, 'Jonas', 'Jonaitis', 'darbuotojopaskyra@gmail.com', '$2b$10$sHXA9/3r0j38gigX9r.gqeEu9r7xLhANGQIdzACsR2shS2Es95H5i', '864735977', NULL, 'employee'),
+(3, 'Tomas', 'Tomaitis', 'adminpaskyra@gmail.com', '$2b$10$0QQN24foLD9z.aivQ64DE.Ghhtv0LyVcQ.72L6IPe1CVQ6.CK.WXa', '+37064735977', NULL, 'administrator');
 
 -- --------------------------------------------------------
 
@@ -170,6 +153,7 @@ CREATE TABLE `_prisma_migrations` (
 --
 
 INSERT INTO `_prisma_migrations` (`id`, `checksum`, `finished_at`, `migration_name`, `logs`, `rolled_back_at`, `started_at`, `applied_steps_count`) VALUES
+('065fadfb-ab19-4078-9908-86684ea466ec', '6355640e3b66dfdb8c5c3e4a9bf972288183370ed73d10ae9e2169cd3ac0e9af', '2023-05-21 18:07:31.913', '20230521180731_8_latest', NULL, NULL, '2023-05-21 18:07:31.891', 1),
 ('26a2a976-7cde-44ea-b329-f47dd672c73a', '33cde7ce1236673ca52053d9938f673f903e96b70b82bed91ba86974f8563c42', '2023-05-02 13:33:35.312', '20230502133335_2_datetime_to_string', NULL, NULL, '2023-05-02 13:33:35.272', 1),
 ('31547af0-8ad0-4a55-a860-5dfa1619782f', 'ae4a64bf28660c35ba85d184f5d6ad65b1cf683b51263cd025e7fc19aa2fcbe3', '2023-05-04 12:15:09.980', '20230504121509_7_fixes_based_on_database_model', NULL, NULL, '2023-05-04 12:15:09.935', 1),
 ('396ad0dc-7aef-4095-ad0d-dd5db8de34f4', '9b17f4c794c01bd0063dd893a14c5c378d60e0a80a302904b8f99db9f50caee3', '2023-05-03 14:26:00.828', '20230503142600_4_changes', NULL, NULL, '2023-05-03 14:26:00.490', 1),
@@ -212,13 +196,6 @@ ALTER TABLE `reservation_hours`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `task`
---
-ALTER TABLE `task`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_repair` (`fk_repair`);
-
---
 -- Indexes for table `user`
 --
 ALTER TABLE `user`
@@ -238,7 +215,7 @@ ALTER TABLE `_prisma_migrations`
 -- AUTO_INCREMENT for table `offer`
 --
 ALTER TABLE `offer`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `repair`
@@ -250,7 +227,7 @@ ALTER TABLE `repair`
 -- AUTO_INCREMENT for table `reservation`
 --
 ALTER TABLE `reservation`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `reservation_hours`
@@ -259,16 +236,10 @@ ALTER TABLE `reservation_hours`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `task`
---
-ALTER TABLE `task`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables
@@ -292,12 +263,6 @@ ALTER TABLE `repair`
 --
 ALTER TABLE `reservation`
   ADD CONSTRAINT `reservation_ibfk_1` FOREIGN KEY (`fk_user`) REFERENCES `user` (`id`);
-
---
--- Constraints for table `task`
---
-ALTER TABLE `task`
-  ADD CONSTRAINT `task_ibfk_1` FOREIGN KEY (`fk_repair`) REFERENCES `repair` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

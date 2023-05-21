@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import { Button, Select, useToast } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { formatInTimeZone } from "date-fns-tz";
 
 export default function Reservation() {
   const { data: session } = useSession();
@@ -20,13 +21,16 @@ export default function Reservation() {
   const toast = useToast();
 
   useEffect(() => {
+    if (!session) {
+      return;
+    }
     checkIfUserHasReservation();
     fetchReservationHours();
-  }, []);
+  }, [session]);
 
   const checkIfUserHasReservation = async () => {
     const response = await axios.post("/api/reservation/user", {
-      user_id: session.id,
+      user_id: parseInt(session?.id),
     });
 
     if (response.status === 200) {
@@ -51,7 +55,7 @@ export default function Reservation() {
         });
         reservedTimes.push(newTime);
       });
-      setTimesArray();
+      await setTimesArray();
     }
   };
 
@@ -66,12 +70,15 @@ export default function Reservation() {
     return new Date(currentYear, 11, 31);
   };
 
-  const setTimesArray = () => {
+  const setTimesArray = async () => {
     let openingDate = new Date(reservationHours.opening_time);
     const closingDate = new Date(reservationHours.closing_time);
     const interval = reservationHours.interval;
-
-    // const rounded = roundToMinutes(new Date("2023-05-14 07:35"), interval);
+    const rounded = await roundToMinutes(new Date(), interval);
+    const earliestTime = rounded.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
     const timeSelectionDiv = document.getElementById("time-select");
     const selectElement = document.getElementById("time-selector");
 
@@ -87,11 +94,24 @@ export default function Reservation() {
       });
 
       if (!reservedTimes.includes(formattedTime)) {
-        const optionElement = document.createElement("option");
-        optionElement.value = formattedTime;
-        optionElement.text = formattedTime;
-        selectElement.appendChild(optionElement);
-        times.push(formattedTime);
+        if (
+          new Date(selectedDate).toDateString() ===
+          new Date("2023-05-22").toDateString()
+        ) {
+          if (formattedTime >= earliestTime) {
+            const optionElement = document.createElement("option");
+            optionElement.value = formattedTime;
+            optionElement.text = formattedTime;
+            selectElement.appendChild(optionElement);
+            times.push(formattedTime);
+          }
+        } else {
+          const optionElement = document.createElement("option");
+          optionElement.value = formattedTime;
+          optionElement.text = formattedTime;
+          selectElement.appendChild(optionElement);
+          times.push(formattedTime);
+        }
       }
 
       openingDate = new Date(openingDate.getTime() + interval * 60000);
@@ -132,6 +152,31 @@ export default function Reservation() {
     return addMinutes(date, minutesLeft);
   };
 
+  const cancelReservation = async () => {
+    const response = await axios.post("/api/reservation/cancel", {
+      user_id: parseInt(session?.id),
+    });
+
+    if (response.status === 200) {
+      router.push("/");
+      toast({
+        title: "Rezervacija atšaukta!",
+        status: "success",
+        position: "top-right",
+        duration: 2000,
+        isClosable: true,
+      });
+    } else {
+      toast({
+        title: "Įvyko klaida! Bandykite iš naujo.",
+        status: "success",
+        position: "top-right",
+        duration: 2000,
+        isClosable: true,
+      });
+    }
+  };
+
   return (
     <>
       <main className="min-h-screen flex flex-row">
@@ -139,6 +184,28 @@ export default function Reservation() {
         {isLoading ? (
           <div className="w-full">
             <h1>Loading...</h1>
+          </div>
+        ) : userReservation ? (
+          <div className="w-full p-4 flex flex-col gap-6">
+            <div>
+              <strong>Jūsų rezervacija: </strong>
+              {formatInTimeZone(
+                userReservation?.date,
+                "UTC",
+                "yyyy-MM-dd"
+              )}{" "}
+              {formatInTimeZone(userReservation?.time, "UTC", "kk:mm")}
+            </div>
+            <div className="flex flex-col gap-2">
+              Norite atšaukti rezervaciją?
+              <Button
+                colorScheme="red"
+                className="w-28 hover:scale-105"
+                onClick={() => cancelReservation()}
+              >
+                Atšaukti
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="w-full flex flex-col justify-center items-center gap-4">

@@ -20,7 +20,7 @@ import {
   Textarea,
   useToast,
 } from "@chakra-ui/react";
-import { formatInTimeZone } from "date-fns-tz";
+import { format } from "date-fns-tz";
 import { useSession } from "next-auth/react";
 import RepairOffer from "@/components/RepairOffer";
 
@@ -58,13 +58,13 @@ export default function Repair() {
   ];
 
   useEffect(() => {
-    if (!repair_id) {
+    if (!session) {
+      return;
+    } else if (!repair_id) {
       return;
     }
-    // fetchRepairData();
-    // fetchRepairOffers();
     fetchData();
-  }, [repair_id, refresh]);
+  }, [repair_id, refresh, session]);
 
   const fetchData = async () => {
     await fetchRepairData();
@@ -105,29 +105,26 @@ export default function Repair() {
 
   const updateRepairData = async () => {
     let response;
-    const currentDate = formatInTimeZone(
-      new Date(),
-      "+06:00",
-      "yyyy-MM-dd kk:mm"
-    );
+    const currentDate = format(new Date(), "yyyy-MM-dd kk:mm", {
+      timeZone: "Europe/Vilnius",
+    });
+
     if (changedStatus === "finished") {
       response = await axios.put("/api/repair", {
         id: parseInt(repair_id),
         title: repairData.title,
         finished_at: new Date(currentDate),
         total_cost: repairData.total_cost,
-        status: repairData.status,
+        status: changedStatus,
       });
     } else if (changedStatus === "in_progress") {
       response = await axios.put("/api/repair", {
         id: parseInt(repair_id),
         title: repairData.title,
-        started_at: new Date(
-          formatInTimeZone(new Date(), "+06:00", "yyyy-MM-dd kk:mm")
-        ),
-        estimated_time: repairData.estimated_time,
+        started_at: new Date(currentDate),
+        estimated_time: new Date(repairData.estimated_time),
         total_cost: repairData.total_cost,
-        status: repairData.status,
+        status: changedStatus,
       });
     } else if (repairData.status === "registered") {
       response = await axios.put("/api/repair", {
@@ -144,7 +141,7 @@ export default function Repair() {
         title: "Remonto informacija atnaujinta!",
         status: "success",
         position: "top-right",
-        duration: 5000,
+        duration: 2000,
         isClosable: true,
       });
     } else {
@@ -152,7 +149,7 @@ export default function Repair() {
         title: "Įvyko klaida! Bandykite iš naujo.",
         status: "error",
         position: "top-right",
-        duration: 5000,
+        duration: 2000,
         isClosable: true,
       });
     }
@@ -192,6 +189,7 @@ export default function Repair() {
         cost: newOfferData.cost,
         repair_id: parseInt(repair_id),
         repair_title: repairData.title,
+        client_email: client.email_address,
       });
 
       if (response.status === 201) {
@@ -201,15 +199,27 @@ export default function Repair() {
           title: "Pasiūlymas sėkmingai pateiktas!",
           status: "success",
           position: "top-right",
-          duration: 5000,
+          duration: 2000,
           isClosable: true,
+        });
+        toast({
+          title: "Išsiųstas el. laiškas klientui!",
+          status: "success",
+          position: "top-right",
+          duration: 2000,
+          isClosable: true,
+        });
+        setNewOfferData({
+          title: "",
+          description: "",
+          cost: "",
         });
       } else {
         toast({
           title: "Įvyko klaida! Bandykite iš naujo.",
           status: "error",
           position: "top-right",
-          duration: 5000,
+          duration: 2000,
           isClosable: true,
         });
       }
@@ -290,10 +300,12 @@ export default function Repair() {
                 )}
                 <FormLabel mt={4}>Remontas užregistruotas</FormLabel>
                 <Text>
-                  {formatInTimeZone(
-                    repairData.registered_at,
-                    "UTC",
-                    "yyyy-MM-dd kk:mm"
+                  {format(
+                    new Date(repairData.registered_at),
+                    "yyyy-MM-dd kk:mm",
+                    {
+                      timeZone: "Europe/Vilnius",
+                    }
                   )}
                 </Text>
                 {(repairData.status === "in_progress" ||
@@ -302,16 +314,20 @@ export default function Repair() {
                   repairData.estimated_time !== null && (
                     <div>
                       <FormLabel mt={4}>Remontas pradėtas</FormLabel>
-                      {formatInTimeZone(
-                        repairData.started_at,
-                        "UTC",
-                        "yyyy-MM-dd kk:mm"
-                      ) || ""}
+                      {format(
+                        new Date(repairData.started_at),
+                        "yyyy-MM-dd kk:mm",
+                        {
+                          timeZone: "Europe/Vilnius",
+                        }
+                      )}
                       <FormLabel mt={4}>Planuojama remonto pabaiga</FormLabel>
-                      {formatInTimeZone(
-                        repairData.estimated_time,
-                        "UTC",
-                        "yyyy-MM-dd kk:mm"
+                      {format(
+                        new Date(repairData.estimated_time),
+                        "yyyy-MM-dd kk:mm",
+                        {
+                          timeZone: "Europe/Vilnius",
+                        }
                       )}
                     </div>
                   )}
@@ -320,10 +336,10 @@ export default function Repair() {
                   repairData.finished_at !== null && (
                     <div>
                       <FormLabel mt={4}>Remontas baigtas</FormLabel>
-                      {formatInTimeZone(
-                        repairData.finished_at,
-                        "UTC",
-                        "yyyy-MM-dd kk:mm"
+                      {format(
+                        new Date(repairData.finished_at),
+                        "yyyy-MM-dd kk:mm",
+                        { timeZone: "Europe/Vilnius" }
                       ) || ""}
                     </div>
                   )}

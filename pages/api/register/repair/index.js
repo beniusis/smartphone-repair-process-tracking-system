@@ -15,9 +15,6 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "POST") {
-    // await prisma.repair.create({
-    //   data: req.body,
-    // });
     await execute({
       query:
         "INSERT INTO repair (title, registered_at, total_cost, status, fk_user_client, fk_user_employee) VALUES(?, ?, ?, ?, ?, ?)",
@@ -33,6 +30,6 @@ export default async function handler(req, res) {
 
     return res
       .status(201)
-      .json({ message: "Remontas sėkmingai užregistruotas!" });
+      .json({ message: "Repair has been successfully registered!" });
   }
 }

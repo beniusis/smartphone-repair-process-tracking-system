@@ -1,4 +1,4 @@
-import { Button, FormLabel } from "@chakra-ui/react";
+import { FormLabel, useToast } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { AiFillCheckSquare } from "react-icons/ai";
@@ -7,6 +7,7 @@ import { HiXMark } from "react-icons/hi2";
 export default function RepairOffer(props) {
   const [offerData, setOfferData] = useState({});
   const [refresh, setRefresh] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     fetchOffer();
@@ -23,12 +24,50 @@ export default function RepairOffer(props) {
   };
 
   const updateOfferStatus = async (newStatus) => {
-    const response = await axios.post("/api/offer/update/status", {
-      status: newStatus,
-      offer_id: parseInt(props.id),
-    });
-    console.log(response);
-    setRefresh(!refresh);
+    try {
+      const response = await axios.post("/api/offer/update/status", {
+        status: newStatus,
+        offer_id: parseInt(props.id),
+      });
+
+      if (response.status === 200) {
+        if (newStatus === "accepted") {
+          toast({
+            title: "Remonto pasiūlymas patvirtintas!",
+            status: "success",
+            position: "top-right",
+            duration: 2000,
+            isClosable: true,
+          });
+        } else if (newStatus === "declined") {
+          toast({
+            title: "Remonto pasiūlymas atmestas!",
+            status: "success",
+            position: "top-right",
+            duration: 2000,
+            isClosable: true,
+          });
+        }
+      } else {
+        toast({
+          title: "Įvyko klaida! Bandykite iš naujo.",
+          status: "error",
+          position: "top-right",
+          duration: 2000,
+          isClosable: true,
+        });
+      }
+
+      setRefresh(!refresh);
+    } catch (error) {
+      toast({
+        title: "Įvyko klaida! Bandykite iš naujo.",
+        status: "error",
+        position: "top-right",
+        duration: 2000,
+        isClosable: true,
+      });
+    }
   };
 
   return (

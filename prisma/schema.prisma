@@ -35,7 +35,6 @@ model repair {
   offer                              offer[]
   user_repair_fk_user_clientTouser   user      @relation("repair_fk_user_clientTouser", fields: [fk_user_client], references: [id], onUpdate: Restrict, map: "repair_ibfk_1")
   user_repair_fk_user_employeeTouser user      @relation("repair_fk_user_employeeTouser", fields: [fk_user_employee], references: [id], onUpdate: Restrict, map: "repair_ibfk_2")
-  task                               task[]
 
   @@index([fk_user_client], map: "fk_user_client")
   @@index([fk_user_employee], map: "fk_user_employee")
@@ -56,17 +55,6 @@ model reservation_hours {
   opening_time DateTime? @db.Time()
   closing_time DateTime? @db.Time()
   interval     Int?
-}
-
-model task {
-  id          Int     @id @default(autoincrement())
-  title       String? @db.VarChar(255)
-  description String? @db.VarChar(255)
-  status      String? @db.Char(11)
-  fk_repair   Int
-  repair      repair  @relation(fields: [fk_repair], references: [id], onUpdate: Restrict, map: "task_ibfk_1")
-
-  @@index([fk_repair], map: "fk_repair")
 }
 
 model user {

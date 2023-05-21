@@ -14,6 +14,7 @@ export default async function handler(req, res) {
       select: {
         name: true,
         surname: true,
+        email_address: true,
       },
       where: {
         id: req.body.client_id,

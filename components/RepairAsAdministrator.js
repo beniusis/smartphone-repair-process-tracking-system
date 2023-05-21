@@ -1,6 +1,14 @@
-import { Table, TableContainer, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
+import {
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+} from "@chakra-ui/react";
 import axios from "axios";
-import { formatInTimeZone } from "date-fns-tz";
+import { format } from "date-fns-tz";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -38,7 +46,7 @@ export default function RepairAsAdministrator() {
       ) : (
         <div className="flex flex-col w-full gap-6">
           {repairs.length !== 0 && (
-            <TableContainer overflowX="hidden" maxWidth={"70%"}>
+            <TableContainer overflowX="hidden">
               <Table size="sm">
                 <Thead>
                   <Tr>
@@ -56,27 +64,33 @@ export default function RepairAsAdministrator() {
                     <Tr key={repair.id}>
                       <Td>{repair.title}</Td>
                       <Td>
-                        {formatInTimeZone(
-                          repair.registered_at,
-                          "UTC",
-                          "yyyy-MM-dd kk:mm"
+                        {format(
+                          new Date(repair.registered_at),
+                          "yyyy-MM-dd kk:mm",
+                          {
+                            timeZone: "Europe/Vilnius",
+                          }
                         )}
                       </Td>
                       <Td>
                         {(repair.started_at !== null &&
-                          formatInTimeZone(
-                            repair.started_at,
-                            "UTC",
-                            "yyyy-MM-dd kk:mm"
+                          format(
+                            new Date(repair.started_at),
+                            "yyyy-MM-dd kk:mm",
+                            {
+                              timeZone: "Europe/Vilnius",
+                            }
                           )) ||
                           "Nepradėta"}
                       </Td>
                       <Td>
                         {(repair.estimated_time !== null &&
-                          formatInTimeZone(
-                            repair.estimated_time,
-                            "UTC",
-                            "yyyy-MM-dd kk:mm"
+                          format(
+                            new Date(repair.estimated_time),
+                            "yyyy-MM-dd kk:mm",
+                            {
+                              timeZone: "Europe/Vilnius",
+                            }
                           )) ||
                           "Nenurodyta"}
                       </Td>
@@ -97,7 +111,7 @@ export default function RepairAsAdministrator() {
             </TableContainer>
           )}
           {repairs.length === 0 && (
-            <div className="ml-4 text-red-500">Nėra registruotų remontų</div>
+            <div className="p-4 text-red-500">Nėra registruotų remontų</div>
           )}
         </div>
       )}

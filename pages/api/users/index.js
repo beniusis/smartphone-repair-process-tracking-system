@@ -39,6 +39,6 @@ export default async function handler(req, res) {
 
     return res
       .status(200)
-      .json({ message: "Naudotojo rolė sėkmingai pakeista!" });
+      .json({ message: "User role has been successfully changed!" });
   }
 }

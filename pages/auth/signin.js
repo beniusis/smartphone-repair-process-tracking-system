@@ -2,11 +2,10 @@ import { IoEye, IoEyeOff } from "react-icons/io5";
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
+import { useToast } from "@chakra-ui/react";
 
 export default function Signin() {
-  const { data: session } = useSession();
-
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [userInfo, setUserInfo] = useState({ email: "", password: "" });
@@ -14,7 +13,7 @@ export default function Signin() {
     emailError: "",
     passwordError: "",
   });
-  const [loginError, setLoginError] = useState("");
+  const toast = useToast();
 
   const openRegisterView = (e) => {
     e.preventDefault();
@@ -57,7 +56,13 @@ export default function Signin() {
       if (res.status === 200) {
         router.push("/");
       } else {
-        setLoginError("Neteisingi prisijungimo duomenys! Bandykite dar kartą.");
+        toast({
+          title: "Neteisingi prisijungimo duomenys!",
+          status: "error",
+          position: "top-right",
+          duration: 2000,
+          isClosable: true,
+        });
       }
     }
   };
@@ -72,25 +77,6 @@ export default function Signin() {
 
   return (
     <>
-      {loginError && (
-        <div className="flex justify-center p-2 items-center">
-          <div
-            className="relative px-4 py-3 leading-normal text-red-700 bg-red-100 rounded-lg max-w-xl"
-            role="alert"
-          >
-            <span className="absolute inset-y-0 left-0 flex items-center ml-4">
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                <path
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                  fillRule="evenodd"
-                ></path>
-              </svg>
-            </span>
-            <p className="ml-6">{loginError}</p>
-          </div>
-        </div>
-      )}
       <main className="min-h-screen flex items-center justify-center bg-white">
         <div className="bg-gray-100 flex rounded-2xl drop-shadow-md max-w-3xl p-5 items-center">
           <div className="md:block hidden w-1/2">

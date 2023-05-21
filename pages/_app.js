@@ -7,9 +7,12 @@ import { ChakraProvider } from "@chakra-ui/react";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export default function App({ Component, pageProps }) {
+export default function App({
+  Component,
+  pageProps: { session, ...pageProps },
+}) {
   return (
-    <SessionProvider session={pageProps.session}>
+    <SessionProvider session={session}>
       <main className={inter.className}>
         <Head>
           <title>Išmaniųjų telefonų remonto proceso sekimo sistema</title>

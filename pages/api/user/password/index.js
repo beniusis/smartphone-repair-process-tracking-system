@@ -20,8 +20,6 @@ export default async function handler(req, res) {
       },
     });
 
-    return res
-      .status(200)
-      .json({ message: "Paskyros slaptažodis sėkmingai pakeistas!" });
+    return res.status(200).json({ message: "Password changed!" });
   }
 }

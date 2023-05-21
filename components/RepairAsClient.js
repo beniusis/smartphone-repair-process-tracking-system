@@ -17,15 +17,14 @@ import {
   Button,
   FormControl,
   FormLabel,
-  Input,
-  Select,
   RadioGroup,
   Stack,
   Radio,
   Textarea,
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { formatInTimeZone } from "date-fns-tz";
+import { format } from "date-fns-tz";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
@@ -40,6 +39,7 @@ export default function RepairAsEmployee() {
   const [refresh, setRefresh] = useState(false);
   const [selectedRepairID, setSelectedRepairID] = useState();
   const [evaluationData, setEvaluationData] = useState({});
+  const toast = useToast();
 
   const ratings = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 
@@ -65,13 +65,40 @@ export default function RepairAsEmployee() {
     }
   };
 
-  const evaluteRepair = async () => {
-    const response = await axios.post("/api/repair/evaluate", {
-      repair_id: selectedRepairID,
-      rating: parseInt(evaluationData.rating),
-      review: evaluationData.review,
-    });
-    console.log(response);
+  const evaluateRepair = async () => {
+    try {
+      const response = await axios.post("/api/repair/evaluate", {
+        repair_id: selectedRepairID,
+        rating: parseInt(evaluationData.rating),
+        review: evaluationData.review,
+      });
+
+      if (response.status === 201) {
+        toast({
+          title: "Remontas sėkmingai įvertintas!",
+          status: "success",
+          position: "top-right",
+          duration: 2000,
+          isClosable: true,
+        });
+      } else {
+        toast({
+          title: "Įvyko klaida! Bandykite iš naujo.",
+          status: "error",
+          position: "top-right",
+          duration: 2000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Įvyko klaida! Bandykite iš naujo.",
+        status: "error",
+        position: "top-right",
+        duration: 2000,
+        isClosable: true,
+      });
+    }
   };
 
   return (
@@ -117,7 +144,7 @@ export default function RepairAsEmployee() {
                 <Button
                   colorScheme="green"
                   onClick={() => {
-                    evaluteRepair();
+                    evaluateRepair();
                     setTimeout(() => {
                       setRefresh(true);
                     }, 500);
@@ -129,77 +156,88 @@ export default function RepairAsEmployee() {
               </ModalFooter>
             </ModalContent>
           </Modal>
-          <TableContainer overflowX="hidden" maxWidth={"70%"}>
-            <Table size="sm">
-              <Thead>
-                <Tr>
-                  <Th>Pavadinimas</Th>
-                  <Th>Užregistruota</Th>
-                  <Th>Pradėta remontuoti</Th>
-                  <Th>Numatoma remonto pabaiga</Th>
-                  <Th>Statusas</Th>
-                  <Th>Kaina</Th>
-                  <Th>Veiksmai</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {clientRepairs?.map((repair) => (
-                  <Tr key={repair.id}>
-                    <Td>{repair.title}</Td>
-                    <Td>
-                      {formatInTimeZone(
-                        repair.registered_at,
-                        "UTC",
-                        "yyyy-MM-dd kk:mm"
-                      )}
-                    </Td>
-                    <Td>
-                      {(repair.started_at !== null &&
-                        formatInTimeZone(
-                          repair.started_at,
-                          "UTC",
-                          "yyyy-MM-dd kk:mm"
-                        )) ||
-                        "Nepradėta"}
-                    </Td>
-                    <Td>
-                      {(repair.estimated_time !== null &&
-                        formatInTimeZone(
-                          repair.estimated_time,
-                          "UTC",
-                          "yyyy-MM-dd kk:mm"
-                        )) ||
-                        "Nenurodyta"}
-                    </Td>
-                    <Td>{showStatus(repair)}</Td>
-                    <Td>{repair.total_cost}</Td>
-                    <Td className="space-x-2">
-                      <div className="flex flex-row gap-2">
-                        <button
-                          className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105"
-                          onClick={() => router.push("/repair/" + repair.id)}
-                        >
-                          Peržiūrėti
-                        </button>
-                        {repair.status === "finished" &&
-                          repair.rating === null && (
-                            <button
-                              className="border border-slate-900 rounded-xl text-slate-900 py-2 px-4 hover:scale-105"
-                              onClick={() => {
-                                setSelectedRepairID(repair.id);
-                                onOpen();
-                              }}
-                            >
-                              Įvertinti
-                            </button>
-                          )}
-                      </div>
-                    </Td>
+          {clientRepairs.length !== 0 && (
+            <TableContainer overflowX="hidden">
+              <Table size="sm">
+                <Thead>
+                  <Tr>
+                    <Th>Pavadinimas</Th>
+                    <Th>Užregistruota</Th>
+                    <Th>Pradėta remontuoti</Th>
+                    <Th>Numatoma remonto pabaiga</Th>
+                    <Th>Statusas</Th>
+                    <Th>Kaina</Th>
+                    <Th>Veiksmai</Th>
                   </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </TableContainer>
+                </Thead>
+                <Tbody>
+                  {clientRepairs?.map((repair) => (
+                    <Tr key={repair.id}>
+                      <Td>{repair.title}</Td>
+                      <Td>
+                        {format(
+                          new Date(repair.registered_at),
+                          "yyyy-MM-dd kk:mm",
+                          {
+                            timeZone: "Europe/Vilnius",
+                          }
+                        )}
+                      </Td>
+                      <Td>
+                        {(repair.started_at !== null &&
+                          format(
+                            new Date(repair.started_at),
+                            "yyyy-MM-dd kk:mm",
+                            {
+                              timeZone: "Europe/Vilnius",
+                            }
+                          )) ||
+                          "Nepradėta"}
+                      </Td>
+                      <Td>
+                        {(repair.estimated_time !== null &&
+                          format(
+                            new Date(repair.estimated_time),
+                            "yyyy-MM-dd kk:mm",
+                            {
+                              timeZone: "Europe/Vilnius",
+                            }
+                          )) ||
+                          "Nenurodyta"}
+                      </Td>
+                      <Td>{showStatus(repair)}</Td>
+                      <Td>{repair.total_cost}</Td>
+                      <Td className="space-x-2">
+                        <div className="flex flex-row gap-2">
+                          <button
+                            className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105"
+                            onClick={() => router.push("/repair/" + repair.id)}
+                          >
+                            Peržiūrėti
+                          </button>
+                          {repair.status === "finished" &&
+                            repair.rating === null && (
+                              <button
+                                className="border border-slate-900 rounded-xl text-slate-900 py-2 px-4 hover:scale-105"
+                                onClick={() => {
+                                  setSelectedRepairID(repair.id);
+                                  onOpen();
+                                }}
+                              >
+                                Įvertinti
+                              </button>
+                            )}
+                        </div>
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableContainer>
+          )}
+          {clientRepairs.length === 0 && (
+            <div className="p-4 text-red-500">Neturite registruotų remontų</div>
+          )}
         </div>
       )}
     </div>

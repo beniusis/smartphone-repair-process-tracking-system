@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import { authOptions } from "../../auth/[...nextauth]";
+import { authOptions } from "../auth/[...nextauth]";
 import { getServerSession } from "next-auth";
+import bcrypt from "bcrypt";
 
 export default async function handler(req, res) {
   const session = await getServerSession(req, res, authOptions);
@@ -9,17 +10,17 @@ export default async function handler(req, res) {
     return res.status(401).json({ message: "You must be logged in." });
   }
 
-  if (session?.role !== "client") {
-    return res.status(403).json({ message: "You have no rights to do this!" });
-  }
-
   if (req.method === "POST") {
-    const result = await prisma.reservation.findFirst({
+    const user = await prisma.user.findUnique({
       where: {
-        fk_user: req.body.user_id,
+        id: req.body.user_id,
       },
     });
 
-    return res.status(200).send(result);
+    if (bcrypt.compareSync(req.body.password, user.password)) {
+      return res.status(200).send();
+    } else {
+      return res.status(404).send();
+    }
   }
 }

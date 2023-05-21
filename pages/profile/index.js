@@ -2,7 +2,6 @@ import Navbar from "@/components/Navbar";
 import {
   Button,
   FormControl,
-  FormErrorMessage,
   FormLabel,
   Input,
   useToast,
@@ -23,11 +22,23 @@ export default function Profile() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({
+    nameError: "* Vardo laukas negali būti tuščias!",
+    surnameError: "* Pavardės laukas negali būti tuščias!",
+    emailError: "* Neįvestas el. pašto adresas!",
+    phoneNumberError: "* Neįvestas telefono numeris!",
+    oldPasswordError: "",
+    newPasswordError: "",
+    repeatedNewPasswordError: "",
+  });
   const toast = useToast();
 
   useEffect(() => {
+    if (!session) {
+      return;
+    }
     getUserData();
-  }, [refresh]);
+  }, [refresh, session]);
 
   const getUserData = async () => {
     const response = await axios.post("/api/user", {
@@ -37,6 +48,22 @@ export default function Profile() {
     setIsLoading(false);
   };
 
+  const validateEmail = () => {
+    let regExp = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (regExp.test(userData.email_address)) {
+      return true;
+    }
+    return false;
+  };
+
+  const validatePhoneNumber = () => {
+    let regExp = /(86|\+3706)\d{3}\d{4}/;
+    if (regExp.test(userData.phone_number)) {
+      return true;
+    }
+    return false;
+  };
+
   const updateUserData = async () => {
     if (
       userData.name !== "" &&
@@ -44,76 +71,37 @@ export default function Profile() {
       userData.email_address !== "" &&
       userData.phone_number !== ""
     ) {
-      const response = await axios.put("/api/user", {
-        id: session.id,
-        name: userData.name,
-        surname: userData.surname,
-        email_address: userData.email_address,
-        phone_number: userData.phone_number,
-        address: userData.address,
-      });
-
-      if (response.status === 200) {
-        setRefresh(!refresh);
-        toast({
-          title: "Paskyros informacija sėkmingai atnaujinta!",
-          status: "success",
-          position: "top-right",
-          duration: 5000,
-          isClosable: true,
+      if (validateEmail() === false) {
+        setFieldErrors({
+          ...fieldErrors,
+          emailError: "* Netinkamas el. pašto formatas!",
+        });
+      } else if (validatePhoneNumber() === false) {
+        setFieldErrors({
+          ...fieldErrors,
+          phoneNumberError:
+            "* Netinkamas telefono numeris! Tinkami formatai: 860000000 arba +37060000000",
         });
       } else {
-        toast({
-          title: "Įvyko klaida! Bandykite iš naujo.",
-          status: "error",
-          position: "top-right",
-          duration: 5000,
-          isClosable: true,
-        });
-      }
-    } else {
-      toast({
-        title: "Neužpildyti visi privalomi laukai!",
-        status: "warning",
-        position: "top-right",
-        duration: 2000,
-        isClosable: true,
-      });
-    }
-  };
-
-  const updateUserPassword = async () => {
-    if (
-      passwordUpdateData.old_password !== "" &&
-      passwordUpdateData.new_password !== "" &&
-      passwordUpdateData.repeated_new_password !== ""
-    ) {
-      if (
-        passwordUpdateData.new_password !==
-        passwordUpdateData.repeated_new_password
-      ) {
-        toast({
-          title: "Naujasis slaptažodis nesutampa su pakartotinu slaptažodžiu!",
-          status: "warning",
-          position: "top-right",
-          duration: 2000,
-          isClosable: true,
-        });
-      } else {
-        const response = await axios.post("/api/user/password", {
-          password: passwordUpdateData.new_password,
-          user_id: session.id,
+        const response = await axios.put("/api/user", {
+          id: session.id,
+          name: userData.name,
+          surname: userData.surname,
+          email_address: userData.email_address,
+          phone_number: userData.phone_number,
+          address: userData.address || null,
         });
 
         if (response.status === 200) {
+          setRefresh(!refresh);
           toast({
-            title: "Paskyros slaptažodis sėkmingai pakeistas!",
+            title: "Paskyros informacija sėkmingai atnaujinta!",
             status: "success",
             position: "top-right",
             duration: 5000,
             isClosable: true,
           });
-          setRefresh(!refresh);
+          router.push("/");
         } else {
           toast({
             title: "Įvyko klaida! Bandykite iš naujo.",
@@ -132,6 +120,92 @@ export default function Profile() {
         duration: 2000,
         isClosable: true,
       });
+    }
+  };
+
+  const updateUserPassword = async () => {
+    if (passwordUpdateData.old_password === "") {
+      setFieldErrors({
+        ...fieldErrors,
+        oldPasswordError: "* Neįvestas senasis slaptažodis!",
+      });
+    } else if (passwordUpdateData.new_password === "") {
+      setFieldErrors({
+        ...fieldErrors,
+        oldPasswordError: "",
+        newPasswordError: "* Neįvestas naujasis slaptažodis!",
+      });
+    } else if (passwordUpdateData.new_password.length < 8) {
+      setFieldErrors({
+        ...fieldErrors,
+        oldPasswordError: "",
+        newPasswordError:
+          "* Slaptažodis turi būti sudarytas bent iš 8 simbolių!",
+      });
+    } else if (passwordUpdateData.repeated_new_password === "") {
+      setFieldErrors({
+        ...fieldErrors,
+        oldPasswordError: "",
+        newPasswordError: "",
+        repeatedNewPasswordError:
+          "* Neįvestas pakartotinas naujasis slaptažodis!",
+      });
+    } else if (
+      passwordUpdateData.new_password !==
+      passwordUpdateData.repeated_new_password
+    ) {
+      setFieldErrors({
+        ...fieldErrors,
+        oldPasswordError: "",
+        newPasswordError:
+          "* Naujasis slaptažodis nesutampa su pakartotinu slaptažodžiu!",
+      });
+    } else {
+      setFieldErrors({
+        ...fieldErrors,
+        oldPasswordError: "",
+        newPasswordError: "",
+        repeatedNewPasswordError: "",
+      });
+      try {
+        const compareResponse = await axios.post("/api/compare", {
+          user_id: session.id,
+          password: passwordUpdateData.old_password,
+        });
+        if (compareResponse.status === 200) {
+          const response = await axios.post("/api/user/password", {
+            password: passwordUpdateData.new_password,
+            user_id: session.id,
+          });
+
+          if (response.status === 200) {
+            toast({
+              title: "Paskyros slaptažodis sėkmingai pakeistas!",
+              status: "success",
+              position: "top-right",
+              duration: 5000,
+              isClosable: true,
+            });
+            setRefresh(!refresh);
+          } else {
+            toast({
+              title: "Įvyko klaida! Bandykite iš naujo.",
+              status: "error",
+              position: "top-right",
+              duration: 5000,
+              isClosable: true,
+            });
+          }
+        }
+      } catch (error) {
+        toast({
+          title: "Neteisingas senasis slaptažodis!",
+          status: "warning",
+          position: "top-right",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
     }
   };
 
@@ -164,7 +238,7 @@ export default function Profile() {
                   />
                   {!userData.name && (
                     <span className="text-xs text-red-600">
-                      Vardo laukas negali būti tuščias
+                      {fieldErrors.nameError}
                     </span>
                   )}
                 </FormControl>
@@ -183,7 +257,7 @@ export default function Profile() {
                   />
                   {!userData.surname && (
                     <span className="text-xs text-red-600">
-                      Pavardės laukas negali būti tuščias
+                      {fieldErrors.surnameError}
                     </span>
                   )}
                 </FormControl>
@@ -200,9 +274,9 @@ export default function Profile() {
                       })
                     }
                   />
-                  {!userData.email_address && (
+                  {!validateEmail() && (
                     <span className="text-xs text-red-600">
-                      El. pašto adreso laukas negali būti tuščias
+                      {fieldErrors.emailError}
                     </span>
                   )}
                 </FormControl>
@@ -219,9 +293,9 @@ export default function Profile() {
                       })
                     }
                   />
-                  {!userData.phone_number && (
+                  {!validatePhoneNumber() && (
                     <span className="text-xs text-red-600">
-                      Telefono numerio laukas negali būti tuščias
+                      {fieldErrors.phoneNumberError}
                     </span>
                   )}
                 </FormControl>
@@ -264,6 +338,11 @@ export default function Profile() {
                       })
                     }
                   />
+                  {!passwordUpdateData.old_password && (
+                    <span className="text-xs text-red-600">
+                      {fieldErrors.oldPasswordError}
+                    </span>
+                  )}
                 </FormControl>
                 <FormControl>
                   <Input
@@ -278,6 +357,11 @@ export default function Profile() {
                       })
                     }
                   />
+                  {
+                    <span className="text-xs text-red-600">
+                      {fieldErrors.newPasswordError}
+                    </span>
+                  }
                 </FormControl>
                 <FormControl>
                   <Input
@@ -292,6 +376,11 @@ export default function Profile() {
                       })
                     }
                   />
+                  {!passwordUpdateData.repeated_new_password && (
+                    <span className="text-xs text-red-600">
+                      {fieldErrors.repeatedNewPasswordError}
+                    </span>
+                  )}
                 </FormControl>
                 <Button
                   colorScheme="green"
