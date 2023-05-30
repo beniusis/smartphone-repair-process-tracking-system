@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { authOptions } from "../auth/[...nextauth]";
+import { authOptions } from "../../auth/[...nextauth]";
 import { getServerSession } from "next-auth";
 
 export default async function handler(req, res) {
@@ -9,17 +9,11 @@ export default async function handler(req, res) {
     return res.status(401).json({ message: "You must be logged in." });
   }
 
-  if (req.method === "POST") {
-    const repair = await prisma.repair.findUnique({
-      where: {
-        id: req.body.id,
-      },
-    });
-
-    return res.status(200).send(repair);
+  if (session?.role !== "employee") {
+    return res.status(403).json({ message: "You have no rights to do this!" });
   }
 
-  if (req.method === "PUT") {
+  if (req.method === "POST") {
     await prisma.repair.update({
       data: {
         title: req.body.title,

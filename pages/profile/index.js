@@ -211,23 +211,27 @@ export default function Profile() {
 
   return (
     <>
-      <main className="min-h-screen flex flex-row">
-        <Navbar />
-        {isLoading ? (
-          <div className="w-full">
-            <h1>Loading...</h1>
-          </div>
-        ) : (
+      {isLoading ? (
+        <div className="lds-ring">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      ) : (
+        <main className="min-h-screen flex flex-row">
+          <Navbar />
           <div className="w-full flex flex-col ml-10">
             <div className="mt-5 space-y-10 w-[90%] md:w-[20%]">
               <FormControl>
-                <FormLabel fontSize={24} textAlign={"center"}>
+                <FormLabel fontSize={"3xl"} textAlign={"center"}>
                   Informacija
                 </FormLabel>
                 <FormControl isRequired>
-                  <FormLabel>Vardas</FormLabel>
+                  <FormLabel fontSize={"2xl"}>Vardas</FormLabel>
                   <Input
                     type="text"
+                    fontSize={"xl"}
                     defaultValue={userData.name}
                     onChange={(e) =>
                       setUserData({
@@ -243,9 +247,10 @@ export default function Profile() {
                   )}
                 </FormControl>
                 <FormControl isRequired>
-                  <FormLabel mt={4}>Pavardė</FormLabel>
+                  <FormLabel fontSize={"2xl"} mt={4}>Pavardė</FormLabel>
                   <Input
                     type="text"
+                    fontSize={"xl"}
                     defaultValue={userData.surname}
                     id="surname"
                     onChange={(e) =>
@@ -262,9 +267,10 @@ export default function Profile() {
                   )}
                 </FormControl>
                 <FormControl isRequired>
-                  <FormLabel mt={4}>El. paštas</FormLabel>
+                  <FormLabel fontSize={"2xl"} mt={4}>El. paštas</FormLabel>
                   <Input
                     type="email"
+                    fontSize={"xl"}
                     defaultValue={userData.email_address}
                     id="email_address"
                     onChange={(e) =>
@@ -281,9 +287,10 @@ export default function Profile() {
                   )}
                 </FormControl>
                 <FormControl isRequired>
-                  <FormLabel mt={4}>Telefono numeris</FormLabel>
+                  <FormLabel fontSize={"2xl"} mt={4}>Telefono numeris</FormLabel>
                   <Input
                     type="text"
+                    fontSize={"xl"}
                     defaultValue={userData.phone_number}
                     id="phone_number"
                     onChange={(e) =>
@@ -300,9 +307,10 @@ export default function Profile() {
                   )}
                 </FormControl>
                 <FormControl>
-                  <FormLabel mt={4}>Adresas</FormLabel>
+                  <FormLabel fontSize={"2xl"} mt={4}>Adresas</FormLabel>
                   <Input
                     type="text"
+                    fontSize={"xl"}
                     defaultValue={userData?.address}
                     id="address"
                     onChange={(e) =>
@@ -316,6 +324,7 @@ export default function Profile() {
                 <Button
                   colorScheme="green"
                   className="w-full"
+                  fontSize={"xl"}
                   mt={4}
                   onClick={() => updateUserData()}
                 >
@@ -323,12 +332,13 @@ export default function Profile() {
                 </Button>
               </FormControl>
               <FormControl>
-                <FormLabel fontSize={24} textAlign={"center"}>
+                <FormLabel fontSize={"3xl"} textAlign={"center"}>
                   Slaptažodžio keitimas
                 </FormLabel>
                 <FormControl>
                   <Input
                     type="password"
+                    fontSize={"xl"}
                     placeholder="Senasis slaptažodis"
                     id="oldpassword"
                     onChange={(e) =>
@@ -347,6 +357,7 @@ export default function Profile() {
                 <FormControl>
                   <Input
                     type="password"
+                    fontSize={"xl"}
                     placeholder="Naujasis slaptažodis"
                     mt={4}
                     id="newpassword"
@@ -366,6 +377,7 @@ export default function Profile() {
                 <FormControl>
                   <Input
                     type="password"
+                    fontSize={"xl"}
                     placeholder="Pakartotinas naujasis slaptažodis"
                     mt={4}
                     id="newrepeatedpassword"
@@ -384,6 +396,7 @@ export default function Profile() {
                 </FormControl>
                 <Button
                   colorScheme="green"
+                  fontSize={"xl"}
                   className="w-full"
                   mt={4}
                   onClick={() => updateUserPassword()}
@@ -393,8 +406,8 @@ export default function Profile() {
               </FormControl>
             </div>
           </div>
-        )}
-      </main>
+        </main>
+      )}
     </>
   );
 }

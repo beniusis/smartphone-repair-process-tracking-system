@@ -508,12 +508,7 @@ export default function Rep() {
   return (
     <>
       {loading ? (
-        <div className="lds-ring">
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-        </div>
+        <main className="min-h-screen">loading...</main>
       ) : (
         <main className="min-h-screen flex flex-row">
           <Navbar />

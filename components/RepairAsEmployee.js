@@ -128,10 +128,13 @@ export default function RepairAsEmployee() {
   };
 
   return (
-    <div className="">
+    <>
       {isLoading ? (
-        <div className="w-full">
-          <h1>Loading...</h1>
+        <div className="lds-ring">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
         </div>
       ) : (
         <div className="flex flex-col w-full gap-6">
@@ -146,11 +149,11 @@ export default function RepairAsEmployee() {
           <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
             <ModalContent>
-              <ModalHeader>Remonto registravimas</ModalHeader>
+              <ModalHeader fontSize={"2xl"}>Remonto registravimas</ModalHeader>
               <ModalCloseButton />
               <ModalBody>
                 <FormControl>
-                  <FormLabel>Pavadinimas</FormLabel>
+                  <FormLabel fontSize={"xl"}>Pavadinimas</FormLabel>
                   <Input
                     type="text"
                     onChange={(e) =>
@@ -165,7 +168,7 @@ export default function RepairAsEmployee() {
                       {errorFields.title}
                     </span>
                   )}
-                  <FormLabel mt={4}>Kaina</FormLabel>
+                  <FormLabel fontSize={"xl"} mt={4}>Kaina</FormLabel>
                   <Input
                     type="number"
                     onChange={(e) =>
@@ -180,7 +183,7 @@ export default function RepairAsEmployee() {
                       {errorFields.cost}
                     </span>
                   )}
-                  <FormLabel mt={4}>Klientas</FormLabel>
+                  <FormLabel fontSize={"xl"} mt={4}>Klientas</FormLabel>
                   <Select
                     onChange={(e) =>
                       setNewRepairData({
@@ -277,6 +280,6 @@ export default function RepairAsEmployee() {
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }

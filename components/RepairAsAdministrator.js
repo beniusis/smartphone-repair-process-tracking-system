@@ -38,10 +38,13 @@ export default function RepairAsAdministrator() {
   };
 
   return (
-    <div className="">
+    <>
       {isLoading ? (
-        <div className="w-full">
-          <h1>Loading...</h1>
+        <div className="lds-ring">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
         </div>
       ) : (
         <div className="flex flex-col w-full gap-6">
@@ -115,6 +118,6 @@ export default function RepairAsAdministrator() {
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }

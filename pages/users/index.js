@@ -31,6 +31,7 @@ export default function Users() {
   const [selectedRole, setSelectedRole] = useState("");
   const toast = useToast();
   const [refresh, setRefresh] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -56,6 +57,7 @@ export default function Users() {
       }
     });
     setUsers(newUsers);
+    setLoading(false);
   };
 
   const updateUserRole = async (userId, newRole) => {
@@ -93,91 +95,100 @@ export default function Users() {
 
   return (
     <>
-      <main className="min-h-screen flex flex-row">
-        <Navbar />
-        <div className="w-full">
-          <TableContainer overflowX="hidden">
-            <Table size="sm">
-              <Thead>
-                <Tr>
-                  <Th>El. paštas</Th>
-                  <Th>Vardas Pavardė</Th>
-                  <Th>Adresas</Th>
-                  <Th>Telefono numeris</Th>
-                  <Th>Veiksmai</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {users?.map((user) => (
-                  <Tr key={user.id}>
-                    <Td>{user.email_address}</Td>
-                    <Td>
-                      {user.name} {user.surname}
-                    </Td>
-                    <Td>{user.address || "Nenurodytas"}</Td>
-                    <Td>{user.phone_number}</Td>
-                    <Td>
-                      <button
-                        className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105 duration-300"
-                        value={JSON.stringify(user)}
-                        onClick={(e) => {
-                          onOpen();
-                          setSelectedUser(JSON.parse(e.target.value));
-                        }}
-                      >
-                        Privilegijos
-                      </button>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </TableContainer>
+      {loading ? (
+        <div className="lds-ring">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
         </div>
+      ) : (
+        <main className="min-h-screen flex flex-row">
+          <Navbar />
+          <div className="w-full">
+            <TableContainer overflowX="hidden">
+              <Table size="sm">
+                <Thead>
+                  <Tr>
+                    <Th>El. paštas</Th>
+                    <Th>Vardas Pavardė</Th>
+                    <Th>Adresas</Th>
+                    <Th>Telefono numeris</Th>
+                    <Th>Veiksmai</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {users?.map((user) => (
+                    <Tr key={user.id}>
+                      <Td>{user.email_address}</Td>
+                      <Td>
+                        {user.name} {user.surname}
+                      </Td>
+                      <Td>{user.address || "Nenurodytas"}</Td>
+                      <Td>{user.phone_number}</Td>
+                      <Td>
+                        <button
+                          className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105 duration-300"
+                          value={JSON.stringify(user)}
+                          onClick={(e) => {
+                            onOpen();
+                            setSelectedUser(JSON.parse(e.target.value));
+                          }}
+                        >
+                          Privilegijos
+                        </button>
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableContainer>
+          </div>
 
-        <Modal isOpen={isOpen} onClose={onClose} closeOnOverlayClick={false}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Privilegijų keitimas</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <FormLabel>
-                {selectedUser.name} {selectedUser.surname}
-              </FormLabel>
-              <Select
-                variant="filled"
-                placeholder={checkSelectedRole()}
-                pt={3}
-                defaultValue={selectedUser.role}
-                onChange={(e) => setSelectedRole(e.target.value)}
-              >
-                {roles.map((role) => {
-                  if (role.LT !== checkSelectedRole()) {
-                    return (
-                      <option value={role.EN} key={role.EN}>
-                        {role.LT}
-                      </option>
-                    );
-                  }
-                })}
-              </Select>
-            </ModalBody>
+          <Modal isOpen={isOpen} onClose={onClose} closeOnOverlayClick={false}>
+            <ModalOverlay />
+            <ModalContent>
+              <ModalHeader>Privilegijų keitimas</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
+                <FormLabel>
+                  {selectedUser.name} {selectedUser.surname}
+                </FormLabel>
+                <Select
+                  variant="filled"
+                  placeholder={checkSelectedRole()}
+                  pt={3}
+                  defaultValue={selectedUser.role}
+                  onChange={(e) => setSelectedRole(e.target.value)}
+                >
+                  {roles.map((role) => {
+                    if (role.LT !== checkSelectedRole()) {
+                      return (
+                        <option value={role.EN} key={role.EN}>
+                          {role.LT}
+                        </option>
+                      );
+                    }
+                  })}
+                </Select>
+              </ModalBody>
 
-            <ModalFooter>
-              <Button
-                colorScheme="green"
-                mr={3}
-                onClick={() => updateUserRole(selectedUser.id, selectedRole)}
-              >
-                Išsaugoti
-              </Button>
-              <Button colorScheme="red" onClick={onClose}>
-                Atšaukti
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-      </main>
+              <ModalFooter>
+                <Button
+                  colorScheme="green"
+                  mr={3}
+                  onClick={() => updateUserRole(selectedUser.id, selectedRole)}
+                >
+                  Išsaugoti
+                </Button>
+                <Button colorScheme="red" onClick={onClose}>
+                  Atšaukti
+                </Button>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
+        </main>
+      )}
     </>
   );
 }

@@ -33,9 +33,11 @@ export default async function handler(req, res) {
     let mailOptions = {
       from: "rokuuutas@gmail.com",
       to: req.body.client_email,
-      subject: "(!) Jums pateiktas naujas remonto pasiūlymas",
-      text: `Sveiki!
-      Jums pateiktas naujas remonto ${req.body.repair_title} pasiūlymas! Peržiūrėkite jį ir patvirtinkite arba atmeskite.`,
+      subject: "(!) Naujas remonto pasiūlymas",
+      text: `<td align="left" class="esd-block-text">
+        <p style="font-family: arial, 'helvetica neue', helvetica, sans-serif; font-size: 30px;">Sveiki,&nbsp;<strong>${req.body.client_name}</strong>!</p>
+        <p style="font-family: arial, 'helvetica neue', helvetica, sans-serif; font-size: 20px;">Jums pateiktas naujas remonto&nbsp;<em><strong>${req.body.repair_title}</strong></em>&nbsp;pasiūlymas - <strong>${req.body.title}</strong>! Peržiūrėkite informaciją apie pasiūlymą ir patvirtinkite arba atmeskite.</p>
+        </td>`,
     };
 
     transporter.sendMail(mailOptions);

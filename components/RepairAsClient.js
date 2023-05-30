@@ -38,7 +38,13 @@ export default function RepairAsEmployee() {
   const [isLoading, setIsLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
   const [selectedRepairID, setSelectedRepairID] = useState();
-  const [evaluationData, setEvaluationData] = useState({});
+  const [evaluationData, setEvaluationData] = useState({
+    rating: 0,
+    review: "",
+  });
+  const [evaluationErrors, setEvaluationErrors] = useState({
+    rating: "",
+  });
   const toast = useToast();
 
   const ratings = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
@@ -66,14 +72,30 @@ export default function RepairAsEmployee() {
   };
 
   const evaluateRepair = async () => {
-    try {
-      const response = await axios.post("/api/repair/evaluate", {
-        repair_id: selectedRepairID,
-        rating: parseInt(evaluationData.rating),
-        review: evaluationData.review,
-      });
+    if (evaluationData.rating === 0) {
+      setEvaluationErrors({ rating: "* Nepasirinktas įvertis!" });
+    } else {
+      try {
+        const response = await axios.post("/api/repair/evaluate", {
+          repair_id: selectedRepairID,
+          rating: parseInt(evaluationData.rating),
+          review: evaluationData.review || null,
+        });
 
-      if (response.status === 201) {
+        if (response.status !== 201) {
+          onClose();
+          toast({
+            title: "Įvyko klaida! Bandykite iš naujo.",
+            status: "error",
+            position: "top-right",
+            duration: 2000,
+            isClosable: true,
+          });
+          return;
+        }
+
+        onClose();
+        setRefresh(!refresh);
         toast({
           title: "Remontas sėkmingai įvertintas!",
           status: "success",
@@ -81,7 +103,8 @@ export default function RepairAsEmployee() {
           duration: 2000,
           isClosable: true,
         });
-      } else {
+      } catch (error) {
+        onClose();
         toast({
           title: "Įvyko klaida! Bandykite iš naujo.",
           status: "error",
@@ -90,22 +113,17 @@ export default function RepairAsEmployee() {
           isClosable: true,
         });
       }
-    } catch (error) {
-      toast({
-        title: "Įvyko klaida! Bandykite iš naujo.",
-        status: "error",
-        position: "top-right",
-        duration: 2000,
-        isClosable: true,
-      });
     }
   };
 
   return (
-    <div className="">
+    <>
       {isLoading ? (
-        <div className="w-full">
-          <h1>Loading...</h1>
+        <div className="lds-ring">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
         </div>
       ) : (
         <div className="flex flex-col w-full gap-6">
@@ -129,6 +147,11 @@ export default function RepairAsEmployee() {
                       ))}
                     </Stack>
                   </RadioGroup>
+                  {evaluationErrors.rating && (
+                    <span className="text-xs text-red-600 ml-1">
+                      {evaluationErrors.rating}
+                    </span>
+                  )}
                   <FormLabel mt={4}>Atsiliepimas</FormLabel>
                   <Textarea
                     onChange={(e) =>
@@ -145,10 +168,9 @@ export default function RepairAsEmployee() {
                   colorScheme="green"
                   onClick={() => {
                     evaluateRepair();
-                    setTimeout(() => {
-                      setRefresh(true);
-                    }, 500);
-                    onClose();
+                    // setTimeout(() => {
+                    //   setRefresh(true);
+                    // }, 500);
                   }}
                 >
                   Pateikti
@@ -240,6 +262,6 @@ export default function RepairAsEmployee() {
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { addMinutes, format, getMinutes } from "date-fns";
+import { addMinutes, getMinutes } from "date-fns";
 import Calendar from "react-calendar";
 import axios from "axios";
 import Navbar from "@/components/Navbar";
 import { Button, Select, useToast } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { formatInTimeZone } from "date-fns-tz";
+import { format } from "date-fns-tz";
 
 export default function Reservation() {
   const { data: session } = useSession();
@@ -95,8 +95,7 @@ export default function Reservation() {
 
       if (!reservedTimes.includes(formattedTime)) {
         if (
-          new Date(selectedDate).toDateString() ===
-          new Date("2023-05-22").toDateString()
+          new Date(selectedDate).toDateString() === new Date().toDateString()
         ) {
           if (formattedTime >= earliestTime) {
             const optionElement = document.createElement("option");
@@ -179,22 +178,25 @@ export default function Reservation() {
 
   return (
     <>
-      <main className="min-h-screen flex flex-row">
-        <Navbar />
-        {isLoading ? (
-          <div className="w-full">
-            <h1>Loading...</h1>
-          </div>
-        ) : userReservation ? (
+      {isLoading ? (
+        <div className="lds-ring">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      ) : userReservation ? (
+        <main className="min-h-screen flex flex-row">
+          <Navbar />
           <div className="w-full p-4 flex flex-col gap-6">
             <div>
               <strong>Jūsų rezervacija: </strong>
-              {formatInTimeZone(
-                userReservation?.date,
-                "UTC",
-                "yyyy-MM-dd"
-              )}{" "}
-              {formatInTimeZone(userReservation?.time, "UTC", "kk:mm")}
+              {format(new Date(userReservation?.date), "yyyy-MM-dd", {
+                timeZone: "Europe/Vilnius",
+              })}{" "}
+              {format(new Date(userReservation?.time), "kk:mm", {
+                timeZone: "Europe/Vilnius",
+              })}
             </div>
             <div className="flex flex-col gap-2">
               Norite atšaukti rezervaciją?
@@ -207,7 +209,10 @@ export default function Reservation() {
               </Button>
             </div>
           </div>
-        ) : (
+        </main>
+      ) : (
+        <main className="min-h-screen flex flex-row">
+          <Navbar />
           <div className="w-full flex flex-col justify-center items-center gap-4">
             <div className="flex flex-row">
               <h1 className="text-3xl font-bold text-slate-900">
@@ -221,6 +226,13 @@ export default function Reservation() {
                 locale="LT"
                 onClickDay={(date) => fetchReservedTimes(date)}
               />
+              <div
+                className="text-center text-red-500 text-xl"
+                id="no-times"
+                hidden
+              >
+                Laisvų laikų pasirinktą dieną nėra!
+              </div>
               <div
                 className="flex flex-col justify-center items-center gap-4"
                 id="time-select"
@@ -245,8 +257,8 @@ export default function Reservation() {
               </div>
             </div>
           </div>
-        )}
-      </main>
+        </main>
+      )}
     </>
   );
 }

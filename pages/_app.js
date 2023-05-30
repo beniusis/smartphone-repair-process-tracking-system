@@ -2,6 +2,7 @@ import Head from "next/head";
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
 import "@/styles/calendar.css";
+import "@/styles/spinner.css";
 import { SessionProvider } from "next-auth/react";
 import { ChakraProvider } from "@chakra-ui/react";
 
