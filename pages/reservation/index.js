@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 import { Button, Select, useToast } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { format } from "date-fns-tz";
+import { format, formatInTimeZone } from "date-fns-tz";
 
 export default function Reservation() {
   const { data: session } = useSession();
@@ -24,9 +24,13 @@ export default function Reservation() {
     if (!session) {
       return;
     }
-    checkIfUserHasReservation();
-    fetchReservationHours();
+    fetchData();
   }, [session]);
+
+  const fetchData = async () => {
+    await checkIfUserHasReservation();
+    await fetchReservationHours().then(() => setIsLoading(false));
+  };
 
   const checkIfUserHasReservation = async () => {
     const response = await axios.post("/api/reservation/user", {
@@ -62,12 +66,17 @@ export default function Reservation() {
   const fetchReservationHours = async () => {
     const response = await axios.get("/api/reservation/hours");
     setReservationHours(response.data[0]);
-    setIsLoading(false);
   };
 
   const getLastDayOfTheYear = () => {
     const currentYear = new Date().getFullYear();
     return new Date(currentYear, 11, 31);
+  };
+
+  const getNextDay = () => {
+    const currentDay = new Date();
+    const nextDay = currentDay.setDate(currentDay.getDate() + 1);
+    return new Date(nextDay);
   };
 
   const setTimesArray = async () => {
@@ -94,17 +103,7 @@ export default function Reservation() {
       });
 
       if (!reservedTimes.includes(formattedTime)) {
-        if (
-          new Date(selectedDate).toDateString() === new Date().toDateString()
-        ) {
-          if (formattedTime >= earliestTime) {
-            const optionElement = document.createElement("option");
-            optionElement.value = formattedTime;
-            optionElement.text = formattedTime;
-            selectElement.appendChild(optionElement);
-            times.push(formattedTime);
-          }
-        } else {
+        if (formattedTime >= earliestTime) {
           const optionElement = document.createElement("option");
           optionElement.value = formattedTime;
           optionElement.text = formattedTime;
@@ -185,7 +184,13 @@ export default function Reservation() {
           <div></div>
           <div></div>
         </div>
-      ) : userReservation ? (
+      ) : userReservation &&
+        format(new Date(userReservation?.date), "yyyy-MM-dd", {
+          timeZone: "Europe/Vilnius",
+        }) >=
+          format(new Date(), "yyyy-MM-dd", { timeZone: "Europe/Vilnius" }) &&
+        formatInTimeZone(userReservation?.time, "UTC", "kk:mm") >=
+          formatInTimeZone(new Date(), "Europe/Vilnius", "kk:mm") ? (
         <main className="min-h-screen flex flex-row">
           <Navbar />
           <div className="w-full p-4 flex flex-col gap-6">
@@ -194,9 +199,15 @@ export default function Reservation() {
               {format(new Date(userReservation?.date), "yyyy-MM-dd", {
                 timeZone: "Europe/Vilnius",
               })}{" "}
-              {format(new Date(userReservation?.time), "kk:mm", {
-                timeZone: "Europe/Vilnius",
-              })}
+              {new Date(userReservation?.time).getUTCHours() < 10 && (
+                <span>0</span>
+              )}
+              {new Date(userReservation?.time).getUTCHours() + ":"}
+              {new Date(userReservation?.time).getUTCMinutes() === 0 ? (
+                <span>00</span>
+              ) : (
+                <span>{new Date(userReservation?.time).getUTCMinutes()}</span>
+              )}
             </div>
             <div className="flex flex-col gap-2">
               Norite atšaukti rezervaciją?
@@ -221,7 +232,7 @@ export default function Reservation() {
             </div>
             <div className="h-[550px] space-y-8">
               <Calendar
-                minDate={new Date()}
+                minDate={getNextDay()}
                 maxDate={getLastDayOfTheYear()}
                 locale="LT"
                 onClickDay={(date) => fetchReservedTimes(date)}

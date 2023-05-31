@@ -19,6 +19,17 @@ model offer {
   @@index([fk_repair], map: "fk_repair")
 }
 
+model task {
+  id          Int       @id @default(autoincrement())
+  title       String?   @db.VarChar(255)
+  description String?   @db.VarChar(255)
+  started_at  DateTime? @db.DateTime(0)
+  finished_at DateTime? @db.DateTime(0)
+  status      String?   @db.Char(11)
+  fk_repair   Int
+  repair      repair    @relation(fields: [fk_repair], references: [id], onUpdate: Restrict, map: "task_ibfk_1")
+}
+
 model repair {
   id                                 Int       @id @default(autoincrement())
   title                              String?   @db.VarChar(255)
@@ -33,6 +44,7 @@ model repair {
   fk_user_client                     Int
   fk_user_employee                   Int
   offer                              offer[]
+  task                               task[]
   user_repair_fk_user_clientTouser   user      @relation("repair_fk_user_clientTouser", fields: [fk_user_client], references: [id], onUpdate: Restrict, map: "repair_ibfk_1")
   user_repair_fk_user_employeeTouser user      @relation("repair_fk_user_employeeTouser", fields: [fk_user_employee], references: [id], onUpdate: Restrict, map: "repair_ibfk_2")
 

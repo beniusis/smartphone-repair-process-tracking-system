@@ -1,11 +1,5 @@
 import {
   TableContainer,
-  Table,
-  Thead,
-  Tr,
-  Th,
-  Tbody,
-  Td,
   useDisclosure,
   Modal,
   ModalOverlay,
@@ -23,6 +17,7 @@ import {
   Textarea,
   useToast,
 } from "@chakra-ui/react";
+import { Table, Thead, Tbody, Tr, Th, Td } from "../components/table";
 import axios from "axios";
 import { format } from "date-fns-tz";
 import { useSession } from "next-auth/react";
@@ -49,16 +44,54 @@ export default function RepairAsEmployee() {
 
   const ratings = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 
+  const [offers, setOffers] = useState({});
+
   useEffect(() => {
-    fetchClientRepairs();
+    fetchData();
   }, [refresh]);
+
+  const fetchData = async () => {
+    await fetchClientRepairs();
+    await fetchOffers().then(() => setIsLoading(false));
+  };
 
   const fetchClientRepairs = async () => {
     const response = await axios.post("/api/repairs/by/client", {
-      client_id: session?.id,
+      client_id: parseInt(session?.id),
     });
     setClientRepairs(response.data);
-    setIsLoading(false);
+  };
+
+  const fetchOffers = async () => {
+    const response = await axios.get("/api/offers");
+
+    if (response.status !== 200) {
+      toast({
+        title: "Įvyko klaida! Bandykite iš naujo.",
+        status: "error",
+        position: "top-right",
+        duration: 2000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setOffers(response.data);
+  };
+
+  const calculateTotalRepairCost = (repair_id) => {
+    let totalCost = 0;
+    offers?.forEach((offer) => {
+      if (offer.fk_repair === repair_id && offer.status === "accepted") {
+        totalCost = totalCost + offer.cost;
+      }
+    });
+    clientRepairs?.forEach((clientRepair) => {
+      if (clientRepair.id === repair_id) {
+        totalCost = totalCost + clientRepair.total_cost;
+      }
+    });
+    return totalCost.toFixed(2);
   };
 
   const showStatus = (repair) => {
@@ -180,7 +213,7 @@ export default function RepairAsEmployee() {
           </Modal>
           {clientRepairs.length !== 0 && (
             <TableContainer overflowX="hidden">
-              <Table size="sm">
+              <Table variant="striped" size="md">
                 <Thead>
                   <Tr>
                     <Th>Pavadinimas</Th>
@@ -213,8 +246,11 @@ export default function RepairAsEmployee() {
                             {
                               timeZone: "Europe/Vilnius",
                             }
-                          )) ||
-                          "Nepradėta"}
+                          )) || (
+                          <div className="flex h-10 md:h-0 items-center">
+                            Nepradėta
+                          </div>
+                        )}
                       </Td>
                       <Td>
                         {(repair.estimated_time !== null &&
@@ -224,11 +260,14 @@ export default function RepairAsEmployee() {
                             {
                               timeZone: "Europe/Vilnius",
                             }
-                          )) ||
-                          "Nenurodyta"}
+                          )) || (
+                          <div className="flex h-10 md:h-0 items-center">
+                            Nenurodyta
+                          </div>
+                        )}
                       </Td>
                       <Td>{showStatus(repair)}</Td>
-                      <Td>{repair.total_cost}</Td>
+                      <Td>{calculateTotalRepairCost(repair.id)}</Td>
                       <Td className="space-x-2">
                         <div className="flex flex-row gap-2">
                           <button

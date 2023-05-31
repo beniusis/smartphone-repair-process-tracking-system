@@ -1,11 +1,5 @@
 import {
   TableContainer,
-  Table,
-  Thead,
-  Tr,
-  Th,
-  Tbody,
-  Td,
   useDisclosure,
   Modal,
   ModalOverlay,
@@ -21,6 +15,7 @@ import {
   Select,
   useToast,
 } from "@chakra-ui/react";
+import { Table, Thead, Tbody, Tr, Th, Td } from "../components/table";
 import axios from "axios";
 import { format } from "date-fns-tz";
 import { useSession } from "next-auth/react";
@@ -36,8 +31,8 @@ export default function RepairAsEmployee() {
   const [isLoading, setIsLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [newRepairData, setNewRepairData] = useState({
-    title: "",
-    total_cost: "",
+    title: "Priekinės kameros keitimas",
+    total_cost: "50",
     fk_user_client: 0,
   });
   const [refresh, setRefresh] = useState(false);
@@ -46,6 +41,10 @@ export default function RepairAsEmployee() {
     cost: "",
   });
   const toast = useToast();
+
+  const [searchInput, setSearchInput] = useState("");
+
+  const [offers, setOffers] = useState({});
 
   useEffect(() => {
     fetchData();
@@ -63,10 +62,42 @@ export default function RepairAsEmployee() {
     setUsers(response.data);
   };
 
+  const calculateTotalRepairCost = (repair_id) => {
+    let totalCost = 0;
+    offers?.forEach((offer) => {
+      if (offer.fk_repair === repair_id && offer.status === "accepted") {
+        totalCost = totalCost + offer.cost;
+      }
+    });
+    employeeRepairs?.forEach((employeeRepair) => {
+      if (employeeRepair.id === repair_id) {
+        totalCost = totalCost + employeeRepair.total_cost;
+      }
+    });
+    return totalCost.toFixed(2);
+  };
+
+  const fetchOffers = async () => {
+    const response = await axios.get("/api/offers");
+
+    if (response.status !== 200) {
+      toast({
+        title: "Įvyko klaida! Bandykite iš naujo.",
+        status: "error",
+        position: "top-right",
+        duration: 2000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setOffers(response.data);
+  };
+
   const fetchData = async () => {
     await fetchEmployeeRepairs();
     await fetchUsers();
-    setIsLoading(false);
+    await fetchOffers().then(() => setIsLoading(false));
   };
 
   const registerRepair = async () => {
@@ -127,6 +158,11 @@ export default function RepairAsEmployee() {
     }
   };
 
+  function handleSearch(e) {
+    e.preventDefault();
+    setSearchInput(e.target.value);
+  }
+
   return (
     <>
       {isLoading ? (
@@ -138,13 +174,20 @@ export default function RepairAsEmployee() {
         </div>
       ) : (
         <div className="flex flex-col w-full gap-6">
-          <div>
+          <div className="flex md:flex-row flex-col gap-4 mt-4 ml-4">
             <button
-              className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105 duration-300 relative mt-4 ml-4"
+              className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105 duration-300 relative w-52"
               onClick={onOpen}
             >
               Registruoti remontą
             </button>
+            <Input
+              maxW={"250px"}
+              type="text"
+              placeholder="Ieškoti pagal pavadinimą..."
+              onChange={handleSearch}
+              value={searchInput}
+            />
           </div>
           <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
@@ -156,6 +199,7 @@ export default function RepairAsEmployee() {
                   <FormLabel fontSize={"xl"}>Pavadinimas</FormLabel>
                   <Input
                     type="text"
+                    defaultValue={newRepairData.title}
                     onChange={(e) =>
                       setNewRepairData({
                         ...newRepairData,
@@ -168,9 +212,12 @@ export default function RepairAsEmployee() {
                       {errorFields.title}
                     </span>
                   )}
-                  <FormLabel fontSize={"xl"} mt={4}>Kaina</FormLabel>
+                  <FormLabel fontSize={"xl"} mt={4}>
+                    Kaina
+                  </FormLabel>
                   <Input
                     type="number"
+                    defaultValue={newRepairData.total_cost}
                     onChange={(e) =>
                       setNewRepairData({
                         ...newRepairData,
@@ -183,7 +230,9 @@ export default function RepairAsEmployee() {
                       {errorFields.cost}
                     </span>
                   )}
-                  <FormLabel fontSize={"xl"} mt={4}>Klientas</FormLabel>
+                  <FormLabel fontSize={"xl"} mt={4}>
+                    Klientas
+                  </FormLabel>
                   <Select
                     onChange={(e) =>
                       setNewRepairData({
@@ -210,9 +259,10 @@ export default function RepairAsEmployee() {
           </Modal>
           {employeeRepairs.length !== 0 && (
             <TableContainer overflowX="hidden">
-              <Table size="sm">
+              <Table variant="striped" size="md">
                 <Thead>
                   <Tr>
+                    <Th>Klientas</Th>
                     <Th>Pavadinimas</Th>
                     <Th>Užregistruota</Th>
                     <Th>Pradėta remontuoti</Th>
@@ -223,52 +273,71 @@ export default function RepairAsEmployee() {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {employeeRepairs?.map((repair) => (
-                    <Tr key={repair.id}>
-                      <Td>{repair.title}</Td>
-                      <Td>
-                        {format(
-                          new Date(repair.registered_at),
-                          "yyyy-MM-dd kk:mm",
-                          {
-                            timeZone: "Europe/Vilnius",
-                          }
-                        )}
-                      </Td>
-                      <Td>
-                        {(repair.started_at !== null &&
-                          format(
-                            new Date(repair.started_at),
+                  {employeeRepairs
+                    ?.filter((erepair) => {
+                      return erepair.title
+                        .toLowerCase()
+                        .includes(searchInput.toLowerCase());
+                    })
+                    .map((repair) => (
+                      <Tr key={repair.id}>
+                        <Td>
+                          {users.map(
+                            (user) =>
+                              repair.fk_user_client === user.id &&
+                              user.name + " " + user.surname
+                          )}
+                        </Td>
+                        <Td>{repair.title}</Td>
+                        <Td>
+                          {format(
+                            new Date(repair.registered_at),
                             "yyyy-MM-dd kk:mm",
                             {
                               timeZone: "Europe/Vilnius",
                             }
-                          )) ||
-                          "Nepradėta"}
-                      </Td>
-                      <Td>
-                        {(repair.estimated_time !== null &&
-                          format(
-                            new Date(repair.estimated_time),
-                            "yyyy-MM-dd kk:mm",
-                            {
-                              timeZone: "Europe/Vilnius",
-                            }
-                          )) ||
-                          "Nenurodyta"}
-                      </Td>
-                      <Td>{showStatus(repair)}</Td>
-                      <Td>{repair.total_cost}</Td>
-                      <Td className="space-x-2">
-                        <button
-                          className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105"
-                          onClick={() => router.push("/repair/" + repair.id)}
-                        >
-                          Peržiūrėti
-                        </button>
-                      </Td>
-                    </Tr>
-                  ))}
+                          )}
+                        </Td>
+                        <Td>
+                          {(repair.started_at !== null &&
+                            format(
+                              new Date(repair.started_at),
+                              "yyyy-MM-dd kk:mm",
+                              {
+                                timeZone: "Europe/Vilnius",
+                              }
+                            )) || (
+                            <div className="flex h-10 md:h-0 items-center">
+                              Nepradėta
+                            </div>
+                          )}
+                        </Td>
+                        <Td>
+                          {(repair.estimated_time !== null &&
+                            format(
+                              new Date(repair.estimated_time),
+                              "yyyy-MM-dd kk:mm",
+                              {
+                                timeZone: "Europe/Vilnius",
+                              }
+                            )) || (
+                            <div className="flex h-10 md:h-0 items-center">
+                              Nenurodyta
+                            </div>
+                          )}
+                        </Td>
+                        <Td>{showStatus(repair)}</Td>
+                        <Td>{calculateTotalRepairCost(repair.id)}</Td>
+                        <Td className="space-x-2">
+                          <button
+                            className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105"
+                            onClick={() => router.push("/repair/" + repair.id)}
+                          >
+                            Peržiūrėti
+                          </button>
+                        </Td>
+                      </Tr>
+                    ))}
                 </Tbody>
               </Table>
             </TableContainer>

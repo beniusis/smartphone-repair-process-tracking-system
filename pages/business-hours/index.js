@@ -134,7 +134,7 @@ export default function BusinessHours() {
         <main className="min-h-screen flex flex-row">
           <Navbar />
           <div className="w-full">
-            <div className="flex flex-col w-32 m-10">
+            <div className="flex flex-col w-48 m-10">
               <FormLabel fontSize={"2xl"}>Pradžia</FormLabel>
               <input
                 type="time"

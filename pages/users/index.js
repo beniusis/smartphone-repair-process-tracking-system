@@ -1,12 +1,6 @@
 import Navbar from "@/components/Navbar";
 import {
   TableContainer,
-  Table,
-  Thead,
-  Tr,
-  Td,
-  Th,
-  Tbody,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -19,7 +13,9 @@ import {
   Button,
   Select,
   useToast,
+  Input,
 } from "@chakra-ui/react";
+import { Table, Thead, Tbody, Tr, Th, Td } from "@/components/table";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -32,6 +28,7 @@ export default function Users() {
   const toast = useToast();
   const [refresh, setRefresh] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [searchInput, setSearchInput] = useState("");
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -93,6 +90,11 @@ export default function Users() {
     else if (selectedUser.role === "administrator") return "Administratorius";
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setSearchInput(e.target.value);
+  };
+
   return (
     <>
       {loading ? (
@@ -106,40 +108,59 @@ export default function Users() {
         <main className="min-h-screen flex flex-row">
           <Navbar />
           <div className="w-full">
+            <div className="flex mt-4 ml-4 mb-4">
+              <Input
+                maxW={"255px"}
+                type="text"
+                placeholder="Ieškoti pagal vardą pavardę..."
+                onChange={handleSearch}
+                value={searchInput}
+              />
+            </div>
             <TableContainer overflowX="hidden">
-              <Table size="sm">
+              <Table variant="striped" size="md">
                 <Thead>
                   <Tr>
-                    <Th>El. paštas</Th>
                     <Th>Vardas Pavardė</Th>
+                    <Th>El. paštas</Th>
                     <Th>Adresas</Th>
                     <Th>Telefono numeris</Th>
                     <Th>Veiksmai</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {users?.map((user) => (
-                    <Tr key={user.id}>
-                      <Td>{user.email_address}</Td>
-                      <Td>
-                        {user.name} {user.surname}
-                      </Td>
-                      <Td>{user.address || "Nenurodytas"}</Td>
-                      <Td>{user.phone_number}</Td>
-                      <Td>
-                        <button
-                          className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105 duration-300"
-                          value={JSON.stringify(user)}
-                          onClick={(e) => {
-                            onOpen();
-                            setSelectedUser(JSON.parse(e.target.value));
-                          }}
-                        >
-                          Privilegijos
-                        </button>
-                      </Td>
-                    </Tr>
-                  ))}
+                  {users
+                    ?.filter(
+                      (usr) =>
+                        usr.name
+                          .toLowerCase()
+                          .includes(searchInput.toLowerCase()) ||
+                        usr.surname
+                          .toLowerCase()
+                          .includes(searchInput.toLowerCase())
+                    )
+                    .map((user) => (
+                      <Tr key={user.id}>
+                        <Td>
+                          {user.name} {user.surname}
+                        </Td>
+                        <Td>{user.email_address}</Td>
+                        <Td>{user.address || "Nenurodytas"}</Td>
+                        <Td>{user.phone_number}</Td>
+                        <Td>
+                          <button
+                            className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105 duration-300"
+                            value={JSON.stringify(user)}
+                            onClick={(e) => {
+                              onOpen();
+                              setSelectedUser(JSON.parse(e.target.value));
+                            }}
+                          >
+                            Privilegijos
+                          </button>
+                        </Td>
+                      </Tr>
+                    ))}
                 </Tbody>
               </Table>
             </TableContainer>

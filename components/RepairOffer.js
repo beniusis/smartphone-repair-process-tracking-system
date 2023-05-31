@@ -95,7 +95,8 @@ export default function RepairOffer(props) {
               />
             </div>
           )}
-          {props.userRole === "employee" &&
+          {(props.userRole === "employee" ||
+            props.userRole === "administrator") &&
             offerData?.status === "proposed" && (
               <div className="flex flex-col gap-2 ml-2 justify-center text-gray-500">
                 Pasiūlyta

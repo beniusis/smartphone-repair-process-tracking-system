@@ -10,6 +10,7 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { IoEye, IoEyeOff } from "react-icons/io5";
 
 export default function Profile() {
   const { data: session } = useSession();
@@ -32,6 +33,7 @@ export default function Profile() {
     repeatedNewPasswordError: "",
   });
   const toast = useToast();
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (!session) {
@@ -98,7 +100,7 @@ export default function Profile() {
             title: "Paskyros informacija sėkmingai atnaujinta!",
             status: "success",
             position: "top-right",
-            duration: 5000,
+            duration: 2000,
             isClosable: true,
           });
           router.push("/");
@@ -107,7 +109,7 @@ export default function Profile() {
             title: "Įvyko klaida! Bandykite iš naujo.",
             status: "error",
             position: "top-right",
-            duration: 5000,
+            duration: 2000,
             isClosable: true,
           });
         }
@@ -179,20 +181,21 @@ export default function Profile() {
           });
 
           if (response.status === 200) {
+            setRefresh(!refresh);
             toast({
               title: "Paskyros slaptažodis sėkmingai pakeistas!",
               status: "success",
               position: "top-right",
-              duration: 5000,
+              duration: 2000,
               isClosable: true,
             });
-            setRefresh(!refresh);
+            router.push("/");
           } else {
             toast({
               title: "Įvyko klaida! Bandykite iš naujo.",
               status: "error",
               position: "top-right",
-              duration: 5000,
+              duration: 2000,
               isClosable: true,
             });
           }
@@ -202,12 +205,28 @@ export default function Profile() {
           title: "Neteisingas senasis slaptažodis!",
           status: "warning",
           position: "top-right",
-          duration: 5000,
+          duration: 2000,
           isClosable: true,
         });
       }
     }
   };
+
+  const eyeOn = (
+    <IoEye
+      className="absolute top-1/2 right-3 -translate-y-1/2 fill-slate-900 hover:cursor-pointer"
+      onClick={() => setShowPassword(!showPassword)}
+    />
+  );
+
+  const eyeOff = (
+    <IoEyeOff
+      className="absolute top-1/2 right-3 -translate-y-1/2 fill-slate-900 hover:cursor-pointer"
+      onClick={() => setShowPassword(!showPassword)}
+    />
+  );
+
+  const showPasswordIcon = showPassword ? eyeOn : eyeOff;
 
   return (
     <>
@@ -222,7 +241,7 @@ export default function Profile() {
         <main className="min-h-screen flex flex-row">
           <Navbar />
           <div className="w-full flex flex-col ml-10">
-            <div className="mt-5 space-y-10 w-[90%] md:w-[20%]">
+            <div className="mt-5 space-y-10 w-[90%] md:w-[25%]">
               <FormControl>
                 <FormLabel fontSize={"3xl"} textAlign={"center"}>
                   Informacija
@@ -247,7 +266,9 @@ export default function Profile() {
                   )}
                 </FormControl>
                 <FormControl isRequired>
-                  <FormLabel fontSize={"2xl"} mt={4}>Pavardė</FormLabel>
+                  <FormLabel fontSize={"2xl"} mt={4}>
+                    Pavardė
+                  </FormLabel>
                   <Input
                     type="text"
                     fontSize={"xl"}
@@ -267,7 +288,9 @@ export default function Profile() {
                   )}
                 </FormControl>
                 <FormControl isRequired>
-                  <FormLabel fontSize={"2xl"} mt={4}>El. paštas</FormLabel>
+                  <FormLabel fontSize={"2xl"} mt={4}>
+                    El. paštas
+                  </FormLabel>
                   <Input
                     type="email"
                     fontSize={"xl"}
@@ -287,7 +310,9 @@ export default function Profile() {
                   )}
                 </FormControl>
                 <FormControl isRequired>
-                  <FormLabel fontSize={"2xl"} mt={4}>Telefono numeris</FormLabel>
+                  <FormLabel fontSize={"2xl"} mt={4}>
+                    Telefono numeris
+                  </FormLabel>
                   <Input
                     type="text"
                     fontSize={"xl"}
@@ -307,7 +332,9 @@ export default function Profile() {
                   )}
                 </FormControl>
                 <FormControl>
-                  <FormLabel fontSize={"2xl"} mt={4}>Adresas</FormLabel>
+                  <FormLabel fontSize={"2xl"} mt={4}>
+                    Adresas
+                  </FormLabel>
                   <Input
                     type="text"
                     fontSize={"xl"}
@@ -336,18 +363,22 @@ export default function Profile() {
                   Slaptažodžio keitimas
                 </FormLabel>
                 <FormControl>
-                  <Input
-                    type="password"
-                    fontSize={"xl"}
-                    placeholder="Senasis slaptažodis"
-                    id="oldpassword"
-                    onChange={(e) =>
-                      setPasswordUpdateData({
-                        ...passwordUpdateData,
-                        old_password: e.target.value,
-                      })
-                    }
-                  />
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      fontSize={"xl"}
+                      placeholder="Senasis slaptažodis"
+                      defaultValue=""
+                      id="oldpassword"
+                      onChange={(e) =>
+                        setPasswordUpdateData({
+                          ...passwordUpdateData,
+                          old_password: e.target.value,
+                        })
+                      }
+                    />
+                    {showPasswordIcon}
+                  </div>
                   {!passwordUpdateData.old_password && (
                     <span className="text-xs text-red-600">
                       {fieldErrors.oldPasswordError}
@@ -356,9 +387,10 @@ export default function Profile() {
                 </FormControl>
                 <FormControl>
                   <Input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     fontSize={"xl"}
                     placeholder="Naujasis slaptažodis"
+                    defaultValue={""}
                     mt={4}
                     id="newpassword"
                     onChange={(e) =>
@@ -376,7 +408,7 @@ export default function Profile() {
                 </FormControl>
                 <FormControl>
                   <Input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     fontSize={"xl"}
                     placeholder="Pakartotinas naujasis slaptažodis"
                     mt={4}

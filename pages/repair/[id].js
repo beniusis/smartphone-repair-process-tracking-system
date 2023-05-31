@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { format } from "date-fns-tz";
 import RepairOffer from "@/components/RepairOffer";
+import RepairTask from "@/components/RepairTask";
 
 export default function Rep() {
   const { data: session } = useSession();
@@ -42,7 +43,9 @@ export default function Rep() {
   const [refresh, setRefresh] = useState(false);
   const [repair, setRepair] = useState({});
   const [offers, setOffers] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [client, setClient] = useState({});
+  const [modalFunction, setModalFunction] = useState("");
   const [employee, setEmployee] = useState({});
   const [updatedRepair, setUpdatedRepair] = useState({
     title: "",
@@ -55,6 +58,10 @@ export default function Rep() {
       "Papildomai telefono stiklo apsaugai galime uždėti apsauginį stikliuką. Ar to norėtumėte?",
     cost: 9.99,
   });
+  const [newTask, setNewTask] = useState({
+    title: "Senojo stikliuko nuėmimas",
+    description: "Nuimamas senasis dužęs telefono stikliukas",
+  });
   const [repairErrors, setRepairErrors] = useState({
     title: "",
   });
@@ -62,6 +69,10 @@ export default function Rep() {
     title: "",
     description: "",
     cost: "",
+  });
+  const [taskErrors, setTaskErrors] = useState({
+    title: "",
+    description: "",
   });
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -78,6 +89,7 @@ export default function Rep() {
   async function fetchAllData() {
     await getRepairData();
     await getRepairOffers();
+    await getRepairTasks();
     await getClient();
     await getEmployee().then(() => setLoading(false));
   }
@@ -132,6 +144,36 @@ export default function Rep() {
         return;
       }
       setOffers(response.data);
+    } catch (error) {
+      toast({
+        title: "Įvyko klaida! Bandykite iš naujo.",
+        status: "error",
+        position: "top-right",
+        duration: 2000,
+        isClosable: true,
+      });
+      router.back();
+    }
+  }
+
+  async function getRepairTasks() {
+    try {
+      const response = await axios.post("/api/task/by/repair", {
+        repair_id: parseInt(repairID),
+      });
+
+      if (response.status !== 200) {
+        toast({
+          title: "Įvyko klaida! Bandykite iš naujo.",
+          status: "error",
+          position: "top-right",
+          duration: 2000,
+          isClosable: true,
+        });
+        router.back();
+        return;
+      }
+      setTasks(response.data);
     } catch (error) {
       toast({
         title: "Įvyko klaida! Bandykite iš naujo.",
@@ -476,7 +518,7 @@ export default function Rep() {
         onClose();
         toast({
           title:
-            "Pasiūlymas sėkmingai pateiktas! Išsiųsta el. laiškas klientui.",
+            "Pasiūlymas sėkmingai pateiktas! Išsiųstas el. laiškas klientui.",
           status: "success",
           position: "top-right",
           duration: 2000,
@@ -493,6 +535,72 @@ export default function Rep() {
         });
       }
     }
+  }
+
+  async function createTask() {
+    if (newTask.title === "") {
+      setTaskErrors({
+        title: "* Neįvestas užduoties pavadinimas!",
+      });
+    } else if (newTask.description === "") {
+      setTaskErrors({
+        title: "",
+        description: "* Neįvestas užduoties aprašymas!",
+      });
+    } else {
+      setTaskErrors({
+        title: "",
+        description: "",
+      });
+      try {
+        const response = await axios.post("/api/task/create", {
+          title: newTask.title,
+          description: newTask.description,
+          repair_id: parseInt(repairID),
+        });
+
+        if (response.status !== 201) {
+          toast({
+            title: "Įvyko klaida! Bandykite iš naujo.",
+            status: "error",
+            position: "top-right",
+            duration: 2000,
+            isClosable: true,
+          });
+          return;
+        }
+
+        setRefresh(!refresh);
+        onClose();
+        toast({
+          title: "Užduotis sėkmingai sukurta!",
+          status: "success",
+          position: "top-right",
+          duration: 2000,
+          isClosable: true,
+        });
+        setNewTask({ title: "", description: "" });
+      } catch (error) {
+        toast({
+          title: "Įvyko klaida! Bandykite iš naujo.",
+          status: "error",
+          position: "top-right",
+          duration: 2000,
+          isClosable: true,
+        });
+      }
+    }
+  }
+
+  function calculateTotalRepairCost() {
+    let totalCost = 0;
+    offers?.forEach((offer) => {
+      if (offer.status === "accepted") {
+        totalCost = totalCost + offer.cost;
+      }
+    });
+    totalCost = totalCost + repair.total_cost;
+    return totalCost.toFixed(2);
   }
 
   function checkSelectedStatus() {
@@ -517,7 +625,7 @@ export default function Rep() {
       ) : (
         <main className="min-h-screen flex flex-row">
           <Navbar />
-          <div className="w-full flex flex-row p-4">
+          <div className="w-full flex md:flex-row flex-col p-4">
             <div>
               {session?.role === "administrator" && (
                 <div className="flex flex-col">
@@ -664,9 +772,13 @@ export default function Rep() {
                   </div>
                 )}
                 <FormLabel fontSize={"xl"} mt={4}>
-                  Kaina
+                  Pradinė kaina
                 </FormLabel>
-                <Text>{repair.total_cost} &euro;</Text>
+                <Text>{repair.total_cost.toFixed(2)} &euro;</Text>
+                <FormLabel fontSize={"xl"} mt={4}>
+                  Galutinė kaina
+                </FormLabel>
+                <Text>{calculateTotalRepairCost()} &euro;</Text>
                 {repair.status === "finished" && (
                   <div className="flex flex-col">
                     <FormLabel fontSize={"xl"} mt={4}>
@@ -726,93 +838,189 @@ export default function Rep() {
                 </div>
               </FormControl>
             </div>
-            <div className="ml-20 w-1/3">
+            <div className="md:ml-20 md:w-1/3 w-full md:mt-0 mt-10">
               <FormLabel fontSize={"2xl"}>Remonto pasiūlymai</FormLabel>
               {offers?.map((offer) => (
                 <RepairOffer
                   key={offer.id}
                   id={offer.id}
                   title={offer.title}
-                  desription={offer.description}
+                  description={offer.description}
                   cost={offer.cost}
                   userRole={session?.role}
                 />
               ))}
               {offers.length === 0 && (
-                <p className="text-red-300">Remontui pasiūlymų nėra</p>
+                <p className="text-red-300">Remontui sukurtų pasiūlymų nėra</p>
               )}
               {session?.role === "employee" && (
-                <Button mt={4} colorScheme="green" onClick={onOpen}>
+                <Button
+                  mt={4}
+                  colorScheme="green"
+                  onClick={() => {
+                    setModalFunction("offer");
+                    onOpen();
+                  }}
+                >
                   Sukurti pasiūlymą
+                </Button>
+              )}
+            </div>
+            <div className="md:ml-20 md:w-1/4 w-full md:mt-0 mt-10">
+              <FormLabel fontSize={"2xl"}>Remonto užduotys</FormLabel>
+              {tasks?.map((task) => (
+                <RepairTask
+                  key={task.id}
+                  id={task.id}
+                  repair_id={task.fk_repair}
+                  title={task.title}
+                  description={task.description}
+                  started_at={task.started_at}
+                  finished_at={task.finished_at}
+                  status={task.status}
+                  userRole={session?.role}
+                />
+              ))}
+              {tasks.length === 0 && (
+                <p className="text-red-300">Remontui sukurtų užduočių nėra</p>
+              )}
+              {session?.role === "employee" && (
+                <Button
+                  mt={4}
+                  colorScheme="green"
+                  onClick={() => {
+                    setModalFunction("task");
+                    onOpen();
+                  }}
+                >
+                  Sukurti užduotį
                 </Button>
               )}
             </div>
             <Modal isOpen={isOpen} onClose={onClose} closeOnOverlayClick>
               <ModalOverlay />
               <ModalContent>
-                <ModalHeader fontSize={"2xl"}>
-                  Remonto pasiūlymo pateikimas
-                </ModalHeader>
+                {(modalFunction === "offer" && (
+                  <ModalHeader fontSize={"2xl"}>
+                    Remonto pasiūlymo pateikimas
+                  </ModalHeader>
+                )) ||
+                  (modalFunction === "task" && (
+                    <ModalHeader fontSize={"2xl"}>
+                      Remonto užduoties sukūrimas
+                    </ModalHeader>
+                  ))}
                 <ModalCloseButton />
                 <ModalBody>
                   <FormControl>
-                    <FormLabel fontSize={"xl"}>Pavadinimas</FormLabel>
-                    <Input
-                      type="text"
-                      defaultValue={newOffer.title}
-                      onChange={(e) =>
-                        setNewOffer({ ...newOffer, title: e.target.value })
-                      }
-                    />
-                    {offerErrors.title && (
-                      <span className="text-xs text-red-600 ml-1 mt-1">
-                        {offerErrors.title}
-                      </span>
-                    )}
-                    <FormLabel fontSize={"xl"} mt={4}>
-                      Aprašymas
-                    </FormLabel>
-                    <Textarea
-                      maxLength={255}
-                      height={"180px"}
-                      maxHeight={"180px"}
-                      defaultValue={newOffer.description}
-                      onChange={(e) =>
-                        setNewOffer({
-                          ...newOffer,
-                          description: e.target.value,
-                        })
-                      }
-                    />
-                    {offerErrors.description && (
-                      <span className="text-xs text-red-600 ml-1 mt-1">
-                        {offerErrors.description}
-                      </span>
-                    )}
-                    <FormLabel fontSize={"xl"} mt={4}>
-                      Kaina
-                    </FormLabel>
-                    <Input
-                      type="number"
-                      defaultValue={newOffer.cost}
-                      onChange={(e) =>
-                        setNewOffer({
-                          ...newOffer,
-                          cost: parseFloat(e.target.value),
-                        })
-                      }
-                    />
-                    {offerErrors.cost && (
-                      <span className="text-xs text-red-600 ml-1 mt-1">
-                        {offerErrors.cost}
-                      </span>
-                    )}
+                    {(modalFunction === "offer" && (
+                      <div>
+                        <FormLabel fontSize={"xl"}>Pavadinimas</FormLabel>
+                        <Input
+                          type="text"
+                          defaultValue={newOffer.title}
+                          onChange={(e) =>
+                            setNewOffer({ ...newOffer, title: e.target.value })
+                          }
+                        />
+                        {offerErrors.title && (
+                          <span className="text-xs text-red-600 ml-1 mt-1">
+                            {offerErrors.title}
+                          </span>
+                        )}
+                        <FormLabel fontSize={"xl"} mt={4}>
+                          Aprašymas
+                        </FormLabel>
+                        <Textarea
+                          maxLength={255}
+                          height={"180px"}
+                          maxHeight={"180px"}
+                          defaultValue={newOffer.description}
+                          onChange={(e) =>
+                            setNewOffer({
+                              ...newOffer,
+                              description: e.target.value,
+                            })
+                          }
+                        />
+                        {offerErrors.description && (
+                          <span className="text-xs text-red-600 ml-1 mt-1">
+                            {offerErrors.description}
+                          </span>
+                        )}
+                        <FormLabel fontSize={"xl"} mt={4}>
+                          Kaina
+                        </FormLabel>
+                        <Input
+                          type="number"
+                          defaultValue={newOffer.cost}
+                          onChange={(e) =>
+                            setNewOffer({
+                              ...newOffer,
+                              cost: parseFloat(e.target.value),
+                            })
+                          }
+                        />
+                        {offerErrors.cost && (
+                          <span className="text-xs text-red-600 ml-1 mt-1">
+                            {offerErrors.cost}
+                          </span>
+                        )}
+                      </div>
+                    )) ||
+                      (modalFunction === "task" && (
+                        <div>
+                          <FormLabel fontSize={"xl"}>Pavadinimas</FormLabel>
+                          <Input
+                            type="text"
+                            defaultValue={newTask.title}
+                            onChange={(e) =>
+                              setNewTask({
+                                ...newTask,
+                                title: e.target.value,
+                              })
+                            }
+                          />
+                          {taskErrors.title && (
+                            <span className="text-xs text-red-600 ml-1 mt-1">
+                              {taskErrors.title}
+                            </span>
+                          )}
+                          <FormLabel fontSize={"xl"} mt={4}>
+                            Aprašymas
+                          </FormLabel>
+                          <Textarea
+                            maxLength={255}
+                            height={"180px"}
+                            maxHeight={"180px"}
+                            defaultValue={newTask.description}
+                            onChange={(e) =>
+                              setNewTask({
+                                ...newTask,
+                                description: e.target.value,
+                              })
+                            }
+                          />
+                          {taskErrors.description && (
+                            <span className="text-xs text-red-600 ml-1 mt-1">
+                              {taskErrors.description}
+                            </span>
+                          )}
+                        </div>
+                      ))}
                   </FormControl>
                 </ModalBody>
                 <ModalFooter>
-                  <Button colorScheme="green" onClick={() => createOffer()}>
-                    Pasiūlyti
-                  </Button>
+                  {(modalFunction === "offer" && (
+                    <Button colorScheme="green" onClick={() => createOffer()}>
+                      Pasiūlyti
+                    </Button>
+                  )) ||
+                    (modalFunction === "task" && (
+                      <Button colorScheme="green" onClick={() => createTask()}>
+                        Sukurti
+                      </Button>
+                    ))}
                 </ModalFooter>
               </ModalContent>
             </Modal>
