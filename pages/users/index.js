@@ -90,6 +90,15 @@ export default function Users() {
     else if (selectedUser.role === "administrator") return "Administratorius";
   };
 
+  // const usersOptions = () => {
+  //   let options = [];
+  //   users?.forEach((user) => {
+  //     const usr = { value: user.id, label: user.name + " " + user.surname };
+  //     options.push(usr);
+  //   });
+  //   return options;
+  // };
+
   const handleSearch = (e) => {
     e.preventDefault();
     setSearchInput(e.target.value);
@@ -110,9 +119,9 @@ export default function Users() {
           <div className="w-full">
             <div className="flex mt-4 ml-4 mb-4">
               <Input
-                maxW={"255px"}
+                maxW={"260px"}
                 type="text"
-                placeholder="Ieškoti pagal vardą pavardę..."
+                placeholder="Ieškoti pagal vardą, pavardę..."
                 onChange={handleSearch}
                 value={searchInput}
               />

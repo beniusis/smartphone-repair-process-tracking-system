@@ -96,11 +96,11 @@ export default function RepairAsEmployee() {
 
   const showStatus = (repair) => {
     if (repair.status === "registered") {
-      return "Užregistruotas";
+      return <span className="text-red-500">Užregistruotas</span>;
     } else if (repair.status === "in_progress") {
-      return "Remontuojama";
+      return <span className="text-yellow-500">Remontuojama</span>;
     } else if (repair.status === "finished") {
-      return "Užbaigtas";
+      return <span className="text-green-500">Užbaigtas</span>;
     }
   };
 
@@ -269,7 +269,7 @@ export default function RepairAsEmployee() {
                       <Td>{showStatus(repair)}</Td>
                       <Td>{calculateTotalRepairCost(repair.id)}</Td>
                       <Td className="space-x-2">
-                        <div className="flex flex-row gap-2">
+                        <div className="flex md:flex-row flex-col gap-2">
                           <button
                             className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105"
                             onClick={() => router.push("/repair/" + repair.id)}

@@ -605,11 +605,11 @@ export default function Rep() {
 
   function checkSelectedStatus() {
     if (repair.status === "registered") {
-      return "Užregistruotas";
+      return <span className="text-red-500">Užregistruotas</span>;
     } else if (repair.status === "in_progress") {
-      return "Remontuojama";
+      return <span className="text-yellow-500">Remontuojama</span>;
     } else if (repair.status === "finished") {
-      return "Užbaigtas";
+      return <span className="text-green-500">Užbaigtas</span>;
     }
   }
 
@@ -661,7 +661,8 @@ export default function Rep() {
               )}
               <FormControl mt={4} width={"xs"}>
                 <FormLabel fontSize={"xl"}>Pavadinimas</FormLabel>
-                {session?.role === "employee" ? (
+                {session?.role === "employee" &&
+                repair.status !== "finished" ? (
                   <div className="flex flex-col">
                     <Input
                       type="text"
@@ -838,65 +839,74 @@ export default function Rep() {
                 </div>
               </FormControl>
             </div>
-            <div className="md:ml-20 md:w-1/3 w-full md:mt-0 mt-10">
-              <FormLabel fontSize={"2xl"}>Remonto pasiūlymai</FormLabel>
-              {offers?.map((offer) => (
-                <RepairOffer
-                  key={offer.id}
-                  id={offer.id}
-                  title={offer.title}
-                  description={offer.description}
-                  cost={offer.cost}
-                  userRole={session?.role}
-                />
-              ))}
-              {offers.length === 0 && (
-                <p className="text-red-300">Remontui sukurtų pasiūlymų nėra</p>
-              )}
-              {session?.role === "employee" && (
-                <Button
-                  mt={4}
-                  colorScheme="green"
-                  onClick={() => {
-                    setModalFunction("offer");
-                    onOpen();
-                  }}
-                >
-                  Sukurti pasiūlymą
-                </Button>
-              )}
-            </div>
-            <div className="md:ml-20 md:w-1/4 w-full md:mt-0 mt-10">
-              <FormLabel fontSize={"2xl"}>Remonto užduotys</FormLabel>
-              {tasks?.map((task) => (
-                <RepairTask
-                  key={task.id}
-                  id={task.id}
-                  repair_id={task.fk_repair}
-                  title={task.title}
-                  description={task.description}
-                  started_at={task.started_at}
-                  finished_at={task.finished_at}
-                  status={task.status}
-                  userRole={session?.role}
-                />
-              ))}
-              {tasks.length === 0 && (
-                <p className="text-red-300">Remontui sukurtų užduočių nėra</p>
-              )}
-              {session?.role === "employee" && (
-                <Button
-                  mt={4}
-                  colorScheme="green"
-                  onClick={() => {
-                    setModalFunction("task");
-                    onOpen();
-                  }}
-                >
-                  Sukurti užduotį
-                </Button>
-              )}
-            </div>
+            {repair.status !== "finished" && (
+              <div className="flex md:flex-row flex-col w-full">
+                <div className="md:ml-20 md:w-1/3 w-full md:mt-0 mt-10">
+                  <FormLabel fontSize={"2xl"}>Remonto pasiūlymai</FormLabel>
+                  {offers?.map((offer) => (
+                    <RepairOffer
+                      key={offer.id}
+                      id={offer.id}
+                      title={offer.title}
+                      description={offer.description}
+                      cost={offer.cost}
+                      userRole={session?.role}
+                    />
+                  ))}
+                  {offers.length === 0 && (
+                    <p className="text-red-300">
+                      Remontui sukurtų pasiūlymų nėra
+                    </p>
+                  )}
+                  {session?.role === "employee" && (
+                    <Button
+                      mt={4}
+                      colorScheme="green"
+                      onClick={() => {
+                        setModalFunction("offer");
+                        onOpen();
+                      }}
+                    >
+                      Sukurti pasiūlymą
+                    </Button>
+                  )}
+                </div>
+                <div className="md:ml-20 md:w-1/4 w-full md:mt-0 mt-10">
+                  <FormLabel fontSize={"2xl"}>Remonto užduotys</FormLabel>
+                  {tasks?.map((task) => (
+                    <RepairTask
+                      key={task.id}
+                      id={task.id}
+                      repair_id={task.fk_repair}
+                      title={task.title}
+                      description={task.description}
+                      started_at={task.started_at}
+                      finished_at={task.finished_at}
+                      status={task.status}
+                      userRole={session?.role}
+                    />
+                  ))}
+                  {tasks.length === 0 && (
+                    <p className="text-red-300">
+                      Remontui sukurtų užduočių nėra
+                    </p>
+                  )}
+                  {session?.role === "employee" && (
+                    <Button
+                      mt={4}
+                      colorScheme="green"
+                      onClick={() => {
+                        setModalFunction("task");
+                        onOpen();
+                      }}
+                    >
+                      Sukurti užduotį
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+
             <Modal isOpen={isOpen} onClose={onClose} closeOnOverlayClick>
               <ModalOverlay />
               <ModalContent>

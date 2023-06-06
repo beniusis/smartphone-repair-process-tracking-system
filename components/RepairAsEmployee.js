@@ -21,6 +21,7 @@ import { format } from "date-fns-tz";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import ReactSelect from "react-select";
 
 export default function RepairAsEmployee() {
   const { data: session } = useSession();
@@ -43,6 +44,7 @@ export default function RepairAsEmployee() {
   const toast = useToast();
 
   const [searchInput, setSearchInput] = useState("");
+  const [selectedRepairStatus, setSelectedRepairStatus] = useState("");
 
   const [offers, setOffers] = useState({});
 
@@ -150,13 +152,32 @@ export default function RepairAsEmployee() {
 
   const showStatus = (repair) => {
     if (repair.status === "registered") {
-      return "Užregistruotas";
+      return <span className="text-red-500">Užregistruotas</span>;
     } else if (repair.status === "in_progress") {
-      return "Remontuojama";
+      return <span className="text-yellow-500">Remontuojama</span>;
     } else if (repair.status === "finished") {
-      return "Užbaigtas";
+      return <span className="text-green-500">Užbaigtas</span>;
     }
   };
+
+  const clientsOptions = () => {
+    let options = [];
+    users?.forEach((user) => {
+      const client = {
+        value: user.id,
+        label: user.name + " " + user.surname,
+      };
+      options.push(client);
+    });
+    return options;
+  };
+
+  const statusOptions = [
+    { value: "", label: "Visi" },
+    { value: "registered", label: "Užregistruoti" },
+    { value: "in_progress", label: "Remontuojami" },
+    { value: "finished", label: "Užbaigti" },
+  ];
 
   function handleSearch(e) {
     e.preventDefault();
@@ -174,20 +195,35 @@ export default function RepairAsEmployee() {
         </div>
       ) : (
         <div className="flex flex-col w-full gap-6">
-          <div className="flex md:flex-row flex-col gap-4 mt-4 ml-4">
+          <div className="flex md:flex-row flex-col gap-4 mt-4 ml-4 md:items-end">
             <button
               className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105 duration-300 relative w-52"
               onClick={onOpen}
             >
               Registruoti remontą
             </button>
-            <Input
-              maxW={"250px"}
-              type="text"
-              placeholder="Ieškoti pagal pavadinimą..."
-              onChange={handleSearch}
-              value={searchInput}
-            />
+            <div className="flex flex-col">
+              <FormLabel>Ieškoti pagal pavadinimą</FormLabel>
+              <Input
+                maxW={"250px"}
+                type="text"
+                placeholder="Remonto pavadinimas"
+                onChange={handleSearch}
+                value={searchInput}
+              />
+            </div>
+            <div className="flex flex-col">
+              <FormLabel>Filtruoti pagal remonto statusą</FormLabel>
+              <ReactSelect
+                className="basic-single w-[250px]"
+                classNamePrefix="select"
+                defaultValue={statusOptions[0]}
+                options={statusOptions}
+                isClearable={false}
+                isSearchable={false}
+                onChange={(e) => setSelectedRepairStatus(e.value)}
+              />
+            </div>
           </div>
           <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
@@ -233,20 +269,20 @@ export default function RepairAsEmployee() {
                   <FormLabel fontSize={"xl"} mt={4}>
                     Klientas
                   </FormLabel>
-                  <Select
+                  <ReactSelect
+                    className="basic-single"
+                    classNamePrefix="select"
+                    defaultValue={clientsOptions()[0]}
+                    options={clientsOptions()}
+                    isClearable={false}
+                    isSearchable={true}
                     onChange={(e) =>
                       setNewRepairData({
                         ...newRepairData,
-                        fk_user_client: e.target.value,
+                        fk_user_client: e.value,
                       })
                     }
-                  >
-                    {users.map((user) => (
-                      <option value={user.id} key={user.id}>
-                        {user.name} {user.surname}
-                      </option>
-                    ))}
-                  </Select>
+                  />
                 </FormControl>
               </ModalBody>
 
@@ -275,9 +311,24 @@ export default function RepairAsEmployee() {
                 <Tbody>
                   {employeeRepairs
                     ?.filter((erepair) => {
-                      return erepair.title
-                        .toLowerCase()
-                        .includes(searchInput.toLowerCase());
+                      if (searchInput === "") {
+                        if (selectedRepairStatus === "") {
+                          return erepair;
+                        }
+                        return erepair.status === selectedRepairStatus;
+                      } else {
+                        if (selectedRepairStatus === "") {
+                          return erepair.title
+                            .toLowerCase()
+                            .includes(searchInput.toLowerCase());
+                        }
+                        return (
+                          erepair.status === selectedRepairStatus &&
+                          erepair.title
+                            .toLowerCase()
+                            .includes(searchInput.toLowerCase())
+                        );
+                      }
                     })
                     .map((repair) => (
                       <Tr key={repair.id}>

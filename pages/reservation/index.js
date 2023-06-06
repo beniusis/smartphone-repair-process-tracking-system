@@ -7,6 +7,7 @@ import { Button, Select, useToast } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { format, formatInTimeZone } from "date-fns-tz";
+import ReactSelect from "react-select";
 
 export default function Reservation() {
   const { data: session } = useSession();
@@ -80,22 +81,27 @@ export default function Reservation() {
   };
 
   const setTimesArray = async () => {
+    let timesArray = [];
     let openingDate = new Date(reservationHours.opening_time);
     const closingDate = new Date(reservationHours.closing_time);
     const interval = reservationHours.interval;
-    const rounded = await roundToMinutes(new Date(), interval);
-    const earliestTime = rounded.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-    const timeSelectionDiv = document.getElementById("time-select");
-    const selectElement = document.getElementById("time-selector");
 
-    while (selectElement.options.length > 0) {
-      selectElement.remove(0);
+    let earliestTime;
+    if (new Date().getHours() >= closingDate.getUTCHours()) {
+      const opening = formatInTimeZone(openingDate, "UTC", "yyyy-MM-dd kk:mm");
+      earliestTime = new Date(opening).toLocaleTimeString("UTC", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } else {
+      const rounded = await roundToMinutes(new Date(), interval);
+      earliestTime = rounded.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     }
 
-    while (openingDate <= closingDate) {
+    while (openingDate < closingDate) {
       const formattedTime = openingDate.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -104,18 +110,14 @@ export default function Reservation() {
 
       if (!reservedTimes.includes(formattedTime)) {
         if (formattedTime >= earliestTime) {
-          const optionElement = document.createElement("option");
-          optionElement.value = formattedTime;
-          optionElement.text = formattedTime;
-          selectElement.appendChild(optionElement);
-          times.push(formattedTime);
+          const timeObj = { value: formattedTime, label: formattedTime };
+          timesArray.push(timeObj);
+          setTimes(timesArray);
         }
       }
 
       openingDate = new Date(openingDate.getTime() + interval * 60000);
     }
-
-    timeSelectionDiv.removeAttribute("hidden");
   };
 
   const setUserReservationTime = async () => {
@@ -189,7 +191,7 @@ export default function Reservation() {
           timeZone: "Europe/Vilnius",
         }) >=
           format(new Date(), "yyyy-MM-dd", { timeZone: "Europe/Vilnius" }) &&
-        formatInTimeZone(userReservation?.time, "UTC", "kk:mm") >=
+        formatInTimeZone(userReservation?.time, "UTC", "kk:mm") <=
           formatInTimeZone(new Date(), "Europe/Vilnius", "kk:mm") ? (
         <main className="min-h-screen flex flex-row">
           <Navbar />
@@ -224,7 +226,7 @@ export default function Reservation() {
       ) : (
         <main className="min-h-screen flex flex-row">
           <Navbar />
-          <div className="w-full flex flex-col justify-center items-center gap-4">
+          <div className="w-full flex flex-col items-center gap-4 mt-10">
             <div className="flex flex-row">
               <h1 className="text-3xl font-bold text-slate-900">
                 Pasirinkite datą
@@ -244,28 +246,28 @@ export default function Reservation() {
               >
                 Laisvų laikų pasirinktą dieną nėra!
               </div>
-              <div
-                className="flex flex-col justify-center items-center gap-4"
-                id="time-select"
-                hidden
-              >
-                <h1 className="text-2xl font-bold text-slate-900">
-                  Pasirinkite laiką
-                </h1>
-                <Select
-                  id="time-selector"
-                  defaultValue={times[0]}
-                  onChange={(e) => {
-                    setSelectedTime(e.target.value);
-                  }}
-                ></Select>
-                <Button
-                  colorScheme="green"
-                  onClick={() => setUserReservationTime()}
-                >
-                  Rezervuoti
-                </Button>
-              </div>
+              {times.length > 0 && (
+                <div className="flex flex-col justify-center items-center gap-4">
+                  <h1 className="text-2xl font-bold text-slate-900">
+                    Pasirinkite laiką
+                  </h1>
+                  <ReactSelect
+                    className="basic-single w-[200px]"
+                    maxMenuHeight={"200px"}
+                    defaultValue={times[0]}
+                    options={times}
+                    classNamePrefix="select"
+                    isSearchable={true}
+                    onChange={(e) => setSelectedTime(e.value)}
+                  />
+                  <Button
+                    colorScheme="green"
+                    onClick={() => setUserReservationTime()}
+                  >
+                    Rezervuoti
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </main>
