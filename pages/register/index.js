@@ -54,13 +54,13 @@ export default function Register() {
       setFieldErrors({ emailError: "* Neįvestas el. pašto adresas!" });
     } else if (validateEmail() === false) {
       setFieldErrors({ emailError: "* Netinkamas el. pašto formatas!" });
-    } else if (registrationInfo.password == "") {
+    } else if (registrationInfo.password === "") {
       setFieldErrors({ passwordError: "* Neįvestas slaptažodis!" });
     } else if (registrationInfo.password.length < 8) {
       setFieldErrors({
         passwordError: "* Slaptažodis turi būti sudarytas bent iš 8 simbolių!",
       });
-    } else if (registrationInfo.repeatedPassword == "") {
+    } else if (registrationInfo.repeatedPassword === "") {
       setFieldErrors({
         repeatedPasswordError: "* Neįvestas pakartotinas slaptažodis!",
       });
@@ -70,13 +70,13 @@ export default function Register() {
       setFieldErrors({
         repeatedPasswordError: "* Nesutampa įvesti slaptažodžiai!",
       });
-    } else if (registrationInfo.name == "") {
+    } else if (registrationInfo.name === "") {
       setFieldErrors({ nameError: "* Vardo laukas negali būti tuščias!" });
-    } else if (registrationInfo.surname == "") {
+    } else if (registrationInfo.surname === "") {
       setFieldErrors({
         surnameError: "* Pavardės laukas negali būti tuščias!",
       });
-    } else if (registrationInfo.phoneNumber == "") {
+    } else if (registrationInfo.phoneNumber === "") {
       setFieldErrors({ phoneNumberError: "* Neįvestas telefono numeris!" });
     } else if (validatePhoneNumber() === false) {
       setFieldErrors({
@@ -110,7 +110,7 @@ export default function Register() {
               "Naudotojo paskyra sėkmingai sukurta! Bandykite prisijungti.",
             status: "success",
             position: "top-right",
-            duration: 5000,
+            duration: 2000,
             isClosable: true,
           });
           router.push("/auth/signin");
@@ -120,7 +120,7 @@ export default function Register() {
           title: `Naudotojas tokiu el. pašto adresu jau egzistuoja! Bandykite prisijungti.`,
           status: "error",
           position: "top-right",
-          duration: 5000,
+          duration: 2000,
           isClosable: true,
         });
       }

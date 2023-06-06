@@ -12,7 +12,6 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Select,
   useToast,
 } from "@chakra-ui/react";
 import { Table, Thead, Tbody, Tr, Th, Td } from "../components/table";

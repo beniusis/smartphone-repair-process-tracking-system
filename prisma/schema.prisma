@@ -78,6 +78,7 @@ model user {
   phone_number                         String?       @db.VarChar(255)
   address                              String?       @db.VarChar(255)
   role                                 String?       @db.Char(13)
+  reset_token                          String?       @db.VarChar(255)
   repair_repair_fk_user_clientTouser   repair[]      @relation("repair_fk_user_clientTouser")
   repair_repair_fk_user_employeeTouser repair[]      @relation("repair_fk_user_employeeTouser")
   reservation                          reservation[]

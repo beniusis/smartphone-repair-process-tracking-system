@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 31, 2023 at 02:33 AM
+-- Generation Time: Jun 06, 2023 at 07:06 PM
 -- Server version: 10.4.19-MariaDB
 -- PHP Version: 7.4.20
 
@@ -43,7 +43,7 @@ CREATE TABLE `offer` (
 INSERT INTO `offer` (`id`, `title`, `description`, `cost`, `status`, `fk_repair`) VALUES
 (7, 'Apsauginio stikliuko uždėjimas', 'Papildomai stiklo apsaugai nuo įvairių dūžių, įbrėžimų galime uždėti apsauginį stikliuką. Ar to norėtumėte?', 9.99, 'declined', 12),
 (8, 'Apsauginio dėkliuko uždėjimas', 'Ar norėtumėtė, kad uždėtumė papildomą apsauginį dėkliuką telefono nugarinės dalies apsaugai?', 15.99, 'accepted', 13),
-(14, 'TOUCH ID mygtuko keitimas', 'Neveikiantis TOUCH ID mygtukas, kurį galime prie to pačio irgi pakeisti. Ar to norėtumėte?', 50, 'proposed', 20);
+(14, 'TOUCH ID mygtuko keitimas', 'Neveikiantis TOUCH ID mygtukas, kurį galime prie to pačio irgi pakeisti. Ar to norėtumėte?', 50, 'accepted', 20);
 
 -- --------------------------------------------------------
 
@@ -71,12 +71,13 @@ CREATE TABLE `repair` (
 --
 
 INSERT INTO `repair` (`id`, `title`, `registered_at`, `started_at`, `finished_at`, `estimated_time`, `total_cost`, `status`, `rating`, `review`, `fk_user_client`, `fk_user_employee`) VALUES
-(11, 'Baterijos keitimas', '2023-05-29 12:09:00', NULL, NULL, NULL, 39.99, 'registered', NULL, NULL, 7, 6),
+(11, 'Baterijos keitimas', '2023-06-06 12:09:00', NULL, NULL, NULL, 39.99, 'registered', NULL, NULL, 7, 6),
 (12, 'Vidinio stiklo keitimas', '2023-05-29 12:25:00', '2023-05-30 08:10:00', '2023-05-30 10:33:00', '2023-05-30 10:00:00', 99.99, 'finished', NULL, NULL, 8, 6),
-(13, 'iPhone nugarinės dalies keitimas', '2023-05-29 12:35:00', '2023-05-29 12:51:00', '2023-05-30 08:01:00', '2023-05-30 08:00:00', 99.99, 'finished', 10, 'Kokybiškas ir greitai atliktas remontas!', 9, 6),
+(13, 'iPhone nugarinės dalies keitimas', '2023-05-29 12:35:00', '2023-05-29 12:51:00', '2023-05-30 05:47:00', '2023-05-30 06:00:00', 99.99, 'finished', 10, 'Kokybiškas ir greitai atliktas remontas!', 9, 6),
 (15, 'Galinės kameros keitimas', '2023-05-30 06:29:00', '2023-05-30 07:01:00', '2023-05-30 07:54:00', '2023-05-30 08:00:00', 50, 'finished', NULL, NULL, 7, 6),
-(20, 'Įjungimo ir šoninių garso mygtukų jungtys', '2023-05-31 06:04:00', '2023-05-31 07:39:00', NULL, '2023-05-31 10:15:00', 30, 'in_progress', NULL, NULL, 8, 10),
-(21, 'iPhone 12 Pro neoriginalaus LCD ekrano keitimas', '2023-05-30 07:22:00', NULL, NULL, NULL, 150, 'registered', NULL, NULL, 11, 10);
+(20, 'Įjungimo ir šoninių garso mygtukų jungtys', '2023-05-31 06:04:00', '2023-05-31 07:39:00', '2023-06-06 16:54:00', '2023-05-31 10:15:00', 30, 'finished', NULL, NULL, 8, 10),
+(21, 'iPhone 12 Pro neoriginalaus LCD ekrano keitimas', '2023-06-07 07:22:00', NULL, NULL, NULL, 150, 'registered', NULL, NULL, 11, 10),
+(26, 'Garsiakalbio keitimas', '2023-06-06 10:49:00', '2023-06-07 07:49:00', NULL, '2023-06-07 09:15:00', 40, 'in_progress', NULL, NULL, 8, 6);
 
 -- --------------------------------------------------------
 
@@ -132,8 +133,8 @@ CREATE TABLE `task` (
 --
 
 INSERT INTO `task` (`id`, `title`, `description`, `status`, `fk_repair`, `finished_at`, `started_at`) VALUES
-(5, 'Įjungimo mygtuko pakeitimas', '-', 'in_progress', 20, NULL, '2023-05-31 07:40:00'),
-(6, 'Garso mygtukų pakeitimas', '-', 'not_started', 20, NULL, NULL);
+(5, 'Įjungimo mygtuko pakeitimas', '-', 'done', 20, '2023-05-31 08:58:00', '2023-05-31 07:40:00'),
+(6, 'Garso mygtukų pakeitimas', '-', 'done', 20, '2023-05-31 10:13:00', '2023-05-31 09:00:00');
 
 -- --------------------------------------------------------
 
@@ -149,21 +150,22 @@ CREATE TABLE `user` (
   `password` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `phone_number` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `role` char(13) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+  `role` char(13) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reset_token` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`id`, `name`, `surname`, `email_address`, `password`, `phone_number`, `address`, `role`) VALUES
-(5, 'Jonas', 'Jonaitis', 'admin@maildrop.cc', '$2b$10$yB6jXZTSZ0V7knJpaIkEt.mcFvCdur3XF2GnoR0BrAJm/PwLMMAK2', '864735977', 'Kovo 11-osios g. 599-32', 'administrator'),
-(6, 'Tomas', 'Tomaitis', 'darbuotojas@maildrop.cc', '$2b$10$Gl02t1LkEbAl5ySYpmIcXONdX4eNW.PoefwyyH7CKKFC2U0nijlMW', '+37064623133', 'Sodžiaus g. 99, Kretinga', 'employee'),
-(7, 'Rokas', 'Beniušis', 'rokas@maildrop.cc', '$2b$10$NtIsOkiFxmCGZ.rINzYZmeXWazpTnEoN7aRewfpZY9pzoqWSEa7ry', '+37064735977', NULL, 'client'),
-(8, 'Juozas', 'Juozaitis', 'klientas@maildrop.cc', '$2b$10$NtIdrDNM6hVl1jrUNf03beznpxoimLoompGCplyhR7n3ER/7J/oKi', '863597747', NULL, 'client'),
-(9, 'Domas', 'Jurevičius', 'unnamedslap@gmail.com', '$2b$10$ubizvK51tQVDBOxKPU14ruuTYkbhGlfGmMNkeKYPu0rtdvRUgxizm', '861524155', 'J. Basanavičiaus g. 154-20, Kretinga', 'client'),
-(10, 'Tomas', 'Lavrinovičius', 'tomasliuks@maildrop.cc', '$2b$10$YL3Ge.tZfsN7FvOmC2PpXeyDldhfsMpt/dSn4dEZpSyd6gqZ6fh/O', '861432166', NULL, 'employee'),
-(11, 'Džiugas', 'Matusevičius', 'naujasklientas@maildrop.cc', '$2b$10$X3l/pNzxQmgTEN2LrGC9rus8O6CgozL6LtwwNkUMfrC577DT7zRiG', '+37061421344', NULL, 'client');
+INSERT INTO `user` (`id`, `name`, `surname`, `email_address`, `password`, `phone_number`, `address`, `role`, `reset_token`) VALUES
+(5, 'Jonas', 'Jonaitis', 'admin@maildrop.cc', '$2b$10$yB6jXZTSZ0V7knJpaIkEt.mcFvCdur3XF2GnoR0BrAJm/PwLMMAK2', '864735977', 'Kovo 11-osios g. 599-32', 'administrator', NULL),
+(6, 'Tomas', 'Tomaitis', 'darbuotojas@maildrop.cc', '$2b$10$Gl02t1LkEbAl5ySYpmIcXONdX4eNW.PoefwyyH7CKKFC2U0nijlMW', '+37064623133', 'Sodžiaus g. 99, Kretinga', 'employee', NULL),
+(7, 'Rokas', 'Beniušis', 'beniusis.rokas@inbox.lt', '$2b$10$9sj8uN8APEGnGJcUu5U//..BEcCvBo15VCBAgKIxxXE76Jo1v.87W', '+37064735977', NULL, 'client', NULL),
+(8, 'Juozas', 'Juozaitis', 'klientas@maildrop.cc', '$2b$10$NtIdrDNM6hVl1jrUNf03beznpxoimLoompGCplyhR7n3ER/7J/oKi', '863597747', NULL, 'client', NULL),
+(9, 'Domas', 'Jurevičius', 'unnamedslap@gmail.com', '$2b$10$ubizvK51tQVDBOxKPU14ruuTYkbhGlfGmMNkeKYPu0rtdvRUgxizm', '861524155', 'J. Basanavičiaus g. 154-20, Kretinga', 'client', NULL),
+(10, 'Tomas', 'Lavrinovičius', 'tomasliuks@maildrop.cc', '$2b$10$YL3Ge.tZfsN7FvOmC2PpXeyDldhfsMpt/dSn4dEZpSyd6gqZ6fh/O', '861432166', NULL, 'employee', NULL),
+(11, 'Džiugas', 'Matusevičius', 'naujasklientas@maildrop.cc', '$2b$10$X3l/pNzxQmgTEN2LrGC9rus8O6CgozL6LtwwNkUMfrC577DT7zRiG', '+37061421344', NULL, 'client', NULL);
 
 -- --------------------------------------------------------
 
@@ -201,7 +203,8 @@ INSERT INTO `_prisma_migrations` (`id`, `checksum`, `finished_at`, `migration_na
 ('92005ae8-5dfe-4df5-ae76-e27de2ac894c', '59c5dd3a0c91200917663f36da0da19bfd152789c5c4b530c0bed72b7e435197', '2023-05-29 11:44:15.296', '20230529114415_10_fixed_relations', NULL, NULL, '2023-05-29 11:44:15.120', 1),
 ('b11e00c2-1b5a-4967-a3f3-f58b285db668', '03d75fc43b2b328ea95aa170a5551283c02b2954ecccdcc585ff580ac983cee8', '2023-05-02 12:51:00.188', '20230502125100_1_task_table_changes', NULL, NULL, '2023-05-02 12:51:00.176', 1),
 ('d1d0bb96-b274-4476-8772-d63bf84cef6d', '3703739ac91933c3eb29f554c24bc2a200dc6eee5d228e886e641c72ebb4c6a2', '2023-05-03 14:48:52.303', '20230503144852_5_datetime_string_changes', NULL, NULL, '2023-05-03 14:48:52.211', 1),
-('e6faf873-be0b-41c2-992d-7cbb879548e9', '76683eba8f9f60c016dd8670fd92037a312af1e0da3c673adaa429d65e792665', '2023-05-30 13:27:17.721', '20230530132717_11_task_table', NULL, NULL, '2023-05-30 13:27:17.665', 1);
+('e6faf873-be0b-41c2-992d-7cbb879548e9', '76683eba8f9f60c016dd8670fd92037a312af1e0da3c673adaa429d65e792665', '2023-05-30 13:27:17.721', '20230530132717_11_task_table', NULL, NULL, '2023-05-30 13:27:17.665', 1),
+('eedde3a4-1edb-483b-80ee-b91b25c61453', 'e8f6a550ab95456610048728c9865ce4b05be34de69985bb1bba73f553ffbfc2', '2023-06-06 08:31:58.781', '20230606083158_15_reset_token_addition', NULL, NULL, '2023-06-06 08:31:58.767', 1);
 
 --
 -- Indexes for dumped tables
@@ -262,19 +265,19 @@ ALTER TABLE `_prisma_migrations`
 -- AUTO_INCREMENT for table `offer`
 --
 ALTER TABLE `offer`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `repair`
 --
 ALTER TABLE `repair`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `reservation`
 --
 ALTER TABLE `reservation`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `reservation_hours`
@@ -292,7 +295,7 @@ ALTER TABLE `task`
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- Constraints for dumped tables

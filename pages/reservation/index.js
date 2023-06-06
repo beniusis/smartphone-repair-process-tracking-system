@@ -3,7 +3,7 @@ import { addMinutes, getMinutes } from "date-fns";
 import Calendar from "react-calendar";
 import axios from "axios";
 import Navbar from "@/components/Navbar";
-import { Button, Select, useToast } from "@chakra-ui/react";
+import { Button, useToast } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { format, formatInTimeZone } from "date-fns-tz";
@@ -19,6 +19,7 @@ export default function Reservation() {
   const [reservedTimes, setReservedTimes] = useState([]);
   const [selectedTime, setSelectedTime] = useState();
   const [userReservation, setUserReservation] = useState({});
+  const [checkTimesLength, setCheckTimesLength] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -118,6 +119,8 @@ export default function Reservation() {
 
       openingDate = new Date(openingDate.getTime() + interval * 60000);
     }
+
+    setCheckTimesLength(true);
   };
 
   const setUserReservationTime = async () => {
@@ -177,39 +180,47 @@ export default function Reservation() {
     }
   };
 
+  const canReserve = () => {
+    if (new Date(userReservation?.date).getDate() >= new Date().getDate()) {
+      if (
+        new Date(userReservation?.time).getUTCHours() >=
+        new Date().getUTCHours()
+      ) {
+        if (
+          new Date(userReservation?.time).getUTCMinutes() >
+          new Date().getUTCMinutes()
+        ) {
+          return false;
+        } else {
+          return true;
+        }
+      }
+      return false;
+    }
+    return true;
+  };
+
   return (
     <>
-      {isLoading ? (
+      {isLoading && (
         <div className="lds-ring">
           <div></div>
           <div></div>
           <div></div>
           <div></div>
         </div>
-      ) : userReservation &&
-        format(new Date(userReservation?.date), "yyyy-MM-dd", {
-          timeZone: "Europe/Vilnius",
-        }) >=
-          format(new Date(), "yyyy-MM-dd", { timeZone: "Europe/Vilnius" }) &&
-        formatInTimeZone(userReservation?.time, "UTC", "kk:mm") <=
-          formatInTimeZone(new Date(), "Europe/Vilnius", "kk:mm") ? (
+      )}
+      {userReservation && !canReserve() && (
         <main className="min-h-screen flex flex-row">
           <Navbar />
           <div className="w-full p-4 flex flex-col gap-6">
             <div>
               <strong>Jūsų rezervacija: </strong>
-              {format(new Date(userReservation?.date), "yyyy-MM-dd", {
-                timeZone: "Europe/Vilnius",
-              })}{" "}
-              {new Date(userReservation?.time).getUTCHours() < 10 && (
-                <span>0</span>
-              )}
-              {new Date(userReservation?.time).getUTCHours() + ":"}
-              {new Date(userReservation?.time).getUTCMinutes() === 0 ? (
-                <span>00</span>
-              ) : (
-                <span>{new Date(userReservation?.time).getUTCMinutes()}</span>
-              )}
+              {new Date(userReservation?.date).toLocaleDateString("lt-LT") +
+                " " +
+                new Date(userReservation?.time).toLocaleTimeString([], {
+                  timeZone: "UTC",
+                })}
             </div>
             <div className="flex flex-col gap-2">
               Norite atšaukti rezervaciją?
@@ -223,7 +234,8 @@ export default function Reservation() {
             </div>
           </div>
         </main>
-      ) : (
+      )}
+      {canReserve() && (
         <main className="min-h-screen flex flex-row">
           <Navbar />
           <div className="w-full flex flex-col items-center gap-4 mt-10">
@@ -239,13 +251,11 @@ export default function Reservation() {
                 locale="LT"
                 onClickDay={(date) => fetchReservedTimes(date)}
               />
-              <div
-                className="text-center text-red-500 text-xl"
-                id="no-times"
-                hidden
-              >
-                Laisvų laikų pasirinktą dieną nėra!
-              </div>
+              {checkTimesLength && times.length === 0 && (
+                <div className="text-center text-red-500 text-xl">
+                  Laisvų laikų pasirinktą dieną nėra!
+                </div>
+              )}
               {times.length > 0 && (
                 <div className="flex flex-col justify-center items-center gap-4">
                   <h1 className="text-2xl font-bold text-slate-900">

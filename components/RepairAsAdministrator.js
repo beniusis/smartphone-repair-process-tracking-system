@@ -1,4 +1,4 @@
-import { FormLabel, Select, TableContainer } from "@chakra-ui/react";
+import { FormLabel, TableContainer } from "@chakra-ui/react";
 import { Table, Thead, Tbody, Tr, Th, Td } from "../components/table";
 import axios from "axios";
 import { format } from "date-fns-tz";

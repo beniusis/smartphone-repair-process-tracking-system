@@ -1,4 +1,4 @@
-import { Button, FormLabel, useToast } from "@chakra-ui/react";
+import { Button, Card, FormLabel, useToast } from "@chakra-ui/react";
 import axios from "axios";
 import { format } from "date-fns-tz";
 import { useEffect, useState } from "react";
@@ -123,74 +123,77 @@ export default function RepairTask(props) {
 
   return (
     <>
-      <main className="border border-slate-900 rounded-md w-full h-fit flex flex-col justify-center p-2 mb-4">
-        <div className="flex flex-row">
-          <div className="w-full">
-            <FormLabel>{props.title}</FormLabel>
-            <FormLabel fontWeight={"400"}>{props.description}</FormLabel>
-            {task?.started_at && (
-              <FormLabel fontWeight={"400"}>
-                Pradėta:{" "}
-                <strong>
-                  {format(new Date(task?.started_at), "yyyy-MM-dd kk:mm", {
-                    timeZone: "Europe/Vilnius",
-                  })}
-                </strong>
-              </FormLabel>
-            )}
-            {task?.finished_at && (
-              <FormLabel fontWeight={"400"}>
-                Baigta:{" "}
-                <strong>
-                  {" "}
-                  {format(new Date(task?.finished_at), "yyyy-MM-dd kk:mm", {
-                    timeZone: "Europe/Vilnius",
-                  })}
-                </strong>
-              </FormLabel>
-            )}
-          </div>
-          {((props.userRole === "client" ||
-            props.userRole === "administrator") &&
-            task?.status === "not_started" && (
-              <div className="flex flex-col gap-2 ml-2 justify-center text-red-500">
-                Nepradėta
-              </div>
-            )) ||
-            ((props.userRole === "client" ||
+      <Card variant={"filled"} mt={4}>
+        <main className="w-full h-fit flex flex-col justify-center p-2 mb-4">
+          <div className="flex flex-row">
+            <div className="w-full">
+              <FormLabel>{props.title}</FormLabel>
+              <FormLabel fontWeight={"400"}>{props.description}</FormLabel>
+              {task?.started_at && (
+                <FormLabel fontWeight={"400"}>
+                  Pradėta:{" "}
+                  <strong>
+                    {format(new Date(task?.started_at), "yyyy-MM-dd kk:mm", {
+                      timeZone: "Europe/Vilnius",
+                    })}
+                  </strong>
+                </FormLabel>
+              )}
+              {task?.finished_at && (
+                <FormLabel fontWeight={"400"}>
+                  Baigta:{" "}
+                  <strong>
+                    {" "}
+                    {format(new Date(task?.finished_at), "yyyy-MM-dd kk:mm", {
+                      timeZone: "Europe/Vilnius",
+                    })}
+                  </strong>
+                </FormLabel>
+              )}
+            </div>
+            {((props.userRole === "client" ||
               props.userRole === "administrator") &&
-              task?.status === "in_progress" && (
-                <div className="flex flex-col gap-2 ml-2 justify-center text-gray-500">
-                  Atliekama
+              task?.status === "not_started" && (
+                <div className="flex flex-col gap-2 ml-2 justify-center text-red-500">
+                  Nepradėta
                 </div>
               )) ||
-            ((props.userRole === "client" ||
-              props.userRole === "administrator") &&
-              task?.status === "done" && (
-                <div className="flex flex-col gap-2 ml-2 justify-center text-green-500">
-                  Atlikta
-                </div>
-              ))}
-          {(props.userRole === "employee" && task?.status === "not_started" && (
-            <div className="flex justify-center items-center">
-              <Button
-                colorScheme="green"
-                onClick={() => startTask("in_progress")}
-              >
-                Pradėti
-              </Button>
-            </div>
-          )) ||
-            (props.userRole === "employee" &&
-              task?.status === "in_progress" && (
+              ((props.userRole === "client" ||
+                props.userRole === "administrator") &&
+                task?.status === "in_progress" && (
+                  <div className="flex flex-col gap-2 ml-2 justify-center text-gray-500">
+                    Atliekama
+                  </div>
+                )) ||
+              ((props.userRole === "client" ||
+                props.userRole === "administrator") &&
+                task?.status === "done" && (
+                  <div className="flex flex-col gap-2 ml-2 justify-center text-green-500">
+                    Atlikta
+                  </div>
+                ))}
+            {(props.userRole === "employee" &&
+              task?.status === "not_started" && (
                 <div className="flex justify-center items-center">
-                  <Button colorScheme="red" onClick={() => endTask("done")}>
-                    Užbaigti
+                  <Button
+                    colorScheme="green"
+                    onClick={() => startTask("in_progress")}
+                  >
+                    Pradėti
                   </Button>
                 </div>
-              ))}
-        </div>
-      </main>
+              )) ||
+              (props.userRole === "employee" &&
+                task?.status === "in_progress" && (
+                  <div className="flex justify-center items-center">
+                    <Button colorScheme="red" onClick={() => endTask("done")}>
+                      Užbaigti
+                    </Button>
+                  </div>
+                ))}
+          </div>
+        </main>
+      </Card>
     </>
   );
 }

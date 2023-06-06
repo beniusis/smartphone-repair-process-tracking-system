@@ -16,6 +16,8 @@ import {
   Radio,
   Textarea,
   useToast,
+  Select,
+  Input,
 } from "@chakra-ui/react";
 import { Table, Thead, Tbody, Tr, Th, Td } from "../components/table";
 import axios from "axios";
@@ -45,6 +47,8 @@ export default function RepairAsEmployee() {
   const ratings = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 
   const [offers, setOffers] = useState({});
+  const [selectedRepairStatus, setSelectedRepairStatus] = useState("");
+  const [searchInput, setSearchInput] = useState("");
 
   useEffect(() => {
     fetchData();
@@ -149,6 +153,18 @@ export default function RepairAsEmployee() {
     }
   };
 
+  function handleSearch(e) {
+    e.preventDefault();
+    setSearchInput(e.target.value);
+  }
+
+  const status = [
+    { LT: "Visi", EN: "" },
+    { LT: "Užregistruotas", EN: "registered" },
+    { LT: "Remontuojama", EN: "in_progress" },
+    { LT: "Užbaigtas", EN: "finished" },
+  ];
+
   return (
     <>
       {isLoading ? (
@@ -160,6 +176,32 @@ export default function RepairAsEmployee() {
         </div>
       ) : (
         <div className="flex flex-col w-full gap-6">
+          <div className="flex md:flex-row flex-col gap-4 mt-4 ml-4 md:items-end">
+            <div className="flex flex-col">
+              <FormLabel>Ieškoti pagal pavadinimą</FormLabel>
+              <Input
+                maxW={"250px"}
+                type="text"
+                placeholder="Remonto pavadinimas"
+                onChange={handleSearch}
+                value={searchInput}
+              />
+            </div>
+            <div className="flex flex-col">
+              <FormLabel>Filtruoti pagal remonto statusą</FormLabel>
+              <Select
+                maxW={"250px"}
+                defaultValue={status[0].EN}
+                onChange={(e) => setSelectedRepairStatus(e.target.value)}
+              >
+                {status.map((s) => (
+                  <option value={s.EN} key={s.EN}>
+                    {s.LT}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          </div>
           <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
             <ModalContent>
@@ -201,9 +243,6 @@ export default function RepairAsEmployee() {
                   colorScheme="green"
                   onClick={() => {
                     evaluateRepair();
-                    // setTimeout(() => {
-                    //   setRefresh(true);
-                    // }, 500);
                   }}
                 >
                   Pateikti
@@ -226,72 +265,95 @@ export default function RepairAsEmployee() {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {clientRepairs?.map((repair) => (
-                    <Tr key={repair.id}>
-                      <Td>{repair.title}</Td>
-                      <Td>
-                        {format(
-                          new Date(repair.registered_at),
-                          "yyyy-MM-dd kk:mm",
-                          {
-                            timeZone: "Europe/Vilnius",
-                          }
-                        )}
-                      </Td>
-                      <Td>
-                        {(repair.started_at !== null &&
-                          format(
-                            new Date(repair.started_at),
+                  {clientRepairs
+                    ?.filter((crepair) => {
+                      if (searchInput === "") {
+                        if (selectedRepairStatus === "") {
+                          return crepair;
+                        }
+                        return crepair.status === selectedRepairStatus;
+                      } else {
+                        if (selectedRepairStatus === "") {
+                          return crepair.title
+                            .toLowerCase()
+                            .includes(searchInput.toLowerCase());
+                        }
+                        return (
+                          crepair.status === selectedRepairStatus &&
+                          crepair.title
+                            .toLowerCase()
+                            .includes(searchInput.toLowerCase())
+                        );
+                      }
+                    })
+                    .map((repair) => (
+                      <Tr key={repair.id}>
+                        <Td>{repair.title}</Td>
+                        <Td>
+                          {format(
+                            new Date(repair.registered_at),
                             "yyyy-MM-dd kk:mm",
                             {
                               timeZone: "Europe/Vilnius",
                             }
-                          )) || (
-                          <div className="flex h-10 md:h-0 items-center">
-                            Nepradėta
+                          )}
+                        </Td>
+                        <Td>
+                          {(repair.started_at !== null &&
+                            format(
+                              new Date(repair.started_at),
+                              "yyyy-MM-dd kk:mm",
+                              {
+                                timeZone: "Europe/Vilnius",
+                              }
+                            )) || (
+                            <div className="flex h-10 md:h-0 items-center">
+                              Nepradėta
+                            </div>
+                          )}
+                        </Td>
+                        <Td>
+                          {(repair.estimated_time !== null &&
+                            format(
+                              new Date(repair.estimated_time),
+                              "yyyy-MM-dd kk:mm",
+                              {
+                                timeZone: "Europe/Vilnius",
+                              }
+                            )) || (
+                            <div className="flex h-10 md:h-0 items-center">
+                              Nenurodyta
+                            </div>
+                          )}
+                        </Td>
+                        <Td>{showStatus(repair)}</Td>
+                        <Td>{calculateTotalRepairCost(repair.id)}</Td>
+                        <Td className="space-x-2">
+                          <div className="flex md:flex-row flex-col gap-2">
+                            <button
+                              className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105"
+                              onClick={() =>
+                                router.push("/repair/" + repair.id)
+                              }
+                            >
+                              Peržiūrėti
+                            </button>
+                            {repair.status === "finished" &&
+                              repair.rating === null && (
+                                <button
+                                  className="border border-slate-900 rounded-xl text-slate-900 py-2 px-4 hover:scale-105"
+                                  onClick={() => {
+                                    setSelectedRepairID(repair.id);
+                                    onOpen();
+                                  }}
+                                >
+                                  Įvertinti
+                                </button>
+                              )}
                           </div>
-                        )}
-                      </Td>
-                      <Td>
-                        {(repair.estimated_time !== null &&
-                          format(
-                            new Date(repair.estimated_time),
-                            "yyyy-MM-dd kk:mm",
-                            {
-                              timeZone: "Europe/Vilnius",
-                            }
-                          )) || (
-                          <div className="flex h-10 md:h-0 items-center">
-                            Nenurodyta
-                          </div>
-                        )}
-                      </Td>
-                      <Td>{showStatus(repair)}</Td>
-                      <Td>{calculateTotalRepairCost(repair.id)}</Td>
-                      <Td className="space-x-2">
-                        <div className="flex md:flex-row flex-col gap-2">
-                          <button
-                            className="bg-slate-900 rounded-xl text-gray-100 py-2 px-4 hover:scale-105"
-                            onClick={() => router.push("/repair/" + repair.id)}
-                          >
-                            Peržiūrėti
-                          </button>
-                          {repair.status === "finished" &&
-                            repair.rating === null && (
-                              <button
-                                className="border border-slate-900 rounded-xl text-slate-900 py-2 px-4 hover:scale-105"
-                                onClick={() => {
-                                  setSelectedRepairID(repair.id);
-                                  onOpen();
-                                }}
-                              >
-                                Įvertinti
-                              </button>
-                            )}
-                        </div>
-                      </Td>
-                    </Tr>
-                  ))}
+                        </Td>
+                      </Tr>
+                    ))}
                 </Tbody>
               </Table>
             </TableContainer>

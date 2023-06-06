@@ -148,6 +148,15 @@ export default function Signin() {
                   Registracija
                 </button>
               </div>
+              <p className="text-sm text-slate-900">
+                Pamiršote slaptažodį?{" "}
+                <a
+                  className="font-semibold hover:text-slate-500"
+                  href="/forgot-password"
+                >
+                  Atkurti
+                </a>
+              </p>
             </form>
           </div>
         </div>

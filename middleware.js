@@ -13,8 +13,16 @@ export async function middleware(req) {
     return NextResponse.next();
   }
 
+  if (url.includes("/forgot-password") && !token) {
+    return NextResponse.next();
+  }
+
   if (!token) {
     return NextResponse.redirect(new URL("/auth/signin", url));
+  }
+
+  if (url.includes("/forgot-password") && token) {
+    return NextResponse.redirect(new URL("/", url));
   }
 
   if (url.includes("/auth/signin") && token) {
@@ -53,5 +61,7 @@ export const config = {
     "/reservation",
     "/profile",
     "/business-hours",
+    "/forgot-password",
+    "/reset-password",
   ],
 };

@@ -90,15 +90,6 @@ export default function Users() {
     else if (selectedUser.role === "administrator") return "Administratorius";
   };
 
-  // const usersOptions = () => {
-  //   let options = [];
-  //   users?.forEach((user) => {
-  //     const usr = { value: user.id, label: user.name + " " + user.surname };
-  //     options.push(usr);
-  //   });
-  //   return options;
-  // };
-
   const handleSearch = (e) => {
     e.preventDefault();
     setSearchInput(e.target.value);

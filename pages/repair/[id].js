@@ -25,7 +25,7 @@ import { format } from "date-fns-tz";
 import RepairOffer from "@/components/RepairOffer";
 import RepairTask from "@/components/RepairTask";
 
-export default function Rep() {
+export default function Repair() {
   const { data: session } = useSession();
   const router = useRouter();
   const toast = useToast();
@@ -613,6 +613,16 @@ export default function Rep() {
     }
   }
 
+  function checkStatus() {
+    if (repair.status === "registered") {
+      return "Užregistruotas";
+    } else if (repair.status === "in_progress") {
+      return "Remontuojama";
+    } else if (repair.status === "finished") {
+      return "Užbaigtas";
+    }
+  }
+
   return (
     <>
       {loading ? (
@@ -711,7 +721,7 @@ export default function Rep() {
                     }}
                   >
                     {status.map((s) => {
-                      if (s.LT !== checkSelectedStatus()) {
+                      if (s.LT !== checkStatus()) {
                         return (
                           <option value={s.EN} key={s.EN}>
                             {s.LT}
@@ -839,26 +849,26 @@ export default function Rep() {
                 </div>
               </FormControl>
             </div>
-            {repair.status !== "finished" && (
-              <div className="flex md:flex-row flex-col w-full">
-                <div className="md:ml-20 md:w-1/3 w-full md:mt-0 mt-10">
-                  <FormLabel fontSize={"2xl"}>Remonto pasiūlymai</FormLabel>
-                  {offers?.map((offer) => (
-                    <RepairOffer
-                      key={offer.id}
-                      id={offer.id}
-                      title={offer.title}
-                      description={offer.description}
-                      cost={offer.cost}
-                      userRole={session?.role}
-                    />
-                  ))}
-                  {offers.length === 0 && (
-                    <p className="text-red-300">
-                      Remontui sukurtų pasiūlymų nėra
-                    </p>
-                  )}
-                  {session?.role === "employee" && (
+            <div className="flex md:flex-row flex-col w-full">
+              <div className="md:ml-20 md:w-1/3 w-full md:mt-0 mt-10">
+                <FormLabel fontSize={"2xl"}>Remonto pasiūlymai</FormLabel>
+                {offers?.map((offer) => (
+                  <RepairOffer
+                    key={offer.id}
+                    id={offer.id}
+                    title={offer.title}
+                    description={offer.description}
+                    cost={offer.cost}
+                    userRole={session?.role}
+                  />
+                ))}
+                {offers.length === 0 && (
+                  <p className="text-red-300">
+                    Remontui sukurtų pasiūlymų nėra
+                  </p>
+                )}
+                {session?.role === "employee" &&
+                  repair.status !== "finished" && (
                     <Button
                       mt={4}
                       colorScheme="green"
@@ -870,28 +880,27 @@ export default function Rep() {
                       Sukurti pasiūlymą
                     </Button>
                   )}
-                </div>
-                <div className="md:ml-20 md:w-1/4 w-full md:mt-0 mt-10">
-                  <FormLabel fontSize={"2xl"}>Remonto užduotys</FormLabel>
-                  {tasks?.map((task) => (
-                    <RepairTask
-                      key={task.id}
-                      id={task.id}
-                      repair_id={task.fk_repair}
-                      title={task.title}
-                      description={task.description}
-                      started_at={task.started_at}
-                      finished_at={task.finished_at}
-                      status={task.status}
-                      userRole={session?.role}
-                    />
-                  ))}
-                  {tasks.length === 0 && (
-                    <p className="text-red-300">
-                      Remontui sukurtų užduočių nėra
-                    </p>
-                  )}
-                  {session?.role === "employee" && (
+              </div>
+              <div className="md:ml-20 md:w-1/4 w-full md:mt-0 mt-10">
+                <FormLabel fontSize={"2xl"}>Remonto užduotys</FormLabel>
+                {tasks?.map((task) => (
+                  <RepairTask
+                    key={task.id}
+                    id={task.id}
+                    repair_id={task.fk_repair}
+                    title={task.title}
+                    description={task.description}
+                    started_at={task.started_at}
+                    finished_at={task.finished_at}
+                    status={task.status}
+                    userRole={session?.role}
+                  />
+                ))}
+                {tasks.length === 0 && (
+                  <p className="text-red-300">Remontui sukurtų užduočių nėra</p>
+                )}
+                {session?.role === "employee" &&
+                  repair.status !== "finished" && (
                     <Button
                       mt={4}
                       colorScheme="green"
@@ -903,9 +912,8 @@ export default function Rep() {
                       Sukurti užduotį
                     </Button>
                   )}
-                </div>
               </div>
-            )}
+            </div>
 
             <Modal isOpen={isOpen} onClose={onClose} closeOnOverlayClick>
               <ModalOverlay />

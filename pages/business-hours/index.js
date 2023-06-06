@@ -3,8 +3,10 @@ import { Button, FormLabel, Input, useToast } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import formatInTimeZone from "date-fns-tz/formatInTimeZone";
+import { useRouter } from "next/router";
 
 export default function BusinessHours() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [reservationHours, setReservationHours] = useState({});
   const [businessHoursData, setBusinessHoursData] = useState({
@@ -67,6 +69,7 @@ export default function BusinessHours() {
           closing_time: "",
           interval: "",
         });
+        router.push("/");
       } catch (error) {
         toast({
           title: "Įvyko klaida! Bandykite iš naujo.",
@@ -85,40 +88,6 @@ export default function BusinessHours() {
         isClosable: true,
       });
     }
-    // if (businessHoursData.interval === "") {
-    //   toast({
-    //     title: "Intervalo laukas negali būti tuščias!",
-    //     status: "warning",
-    //     position: "top-right",
-    //     duration: 5000,
-    //     isClosable: true,
-    //   });
-    // } else {
-    //   const response = await axios.post("/api/reservation/hours", {
-    //     opening_time:
-    //       businessHoursData.opening_time || reservationHours.opening_time,
-    //     closing_time:
-    //       businessHoursData.closing_time || reservationHours.closing_time,
-    //     interval:
-    //       parseInt(businessHoursData.interval) || reservationHours.interval,
-    //   });
-
-    //   if (response.status === 201) {
-    //     toast({
-    //       title: "Darbo laikas sėkmingai atnaujintas!",
-    //       status: "success",
-    //       position: "top-right",
-    //       duration: 5000,
-    //       isClosable: true,
-    //     });
-    //     setRefresh(!refresh);
-    //     setBusinessHoursData({
-    //       opening_time: "",
-    //       closing_time: "",
-    //       interval: "",
-    //     });
-    //   }
-    // }
   };
 
   return (

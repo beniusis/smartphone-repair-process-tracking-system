@@ -85,33 +85,50 @@ export default function Profile() {
             "* Netinkamas telefono numeris! Tinkami formatai: 860000000 arba +37060000000",
         });
       } else {
-        const response = await axios.put("/api/user", {
-          id: session.id,
-          name: userData.name,
-          surname: userData.surname,
-          email_address: userData.email_address,
-          phone_number: userData.phone_number,
-          address: userData.address || null,
-        });
+        try {
+          await axios.post("/api/compare/emails", {
+            email_address: userData.email_address,
+          });
+        } catch (error) {
+          if (error.response.status === 302) {
+            toast({
+              title: "Naudotojas tokiu el. paštu jau egzistuoja!",
+              status: "error",
+              position: "top-right",
+              duration: 2000,
+              isClosable: true,
+            });
+            return;
+          } else if (error.response.status === 404) {
+            const response = await axios.put("/api/user", {
+              id: session.id,
+              name: userData.name,
+              surname: userData.surname,
+              email_address: userData.email_address,
+              phone_number: userData.phone_number,
+              address: userData.address || null,
+            });
 
-        if (response.status === 200) {
-          setRefresh(!refresh);
-          toast({
-            title: "Paskyros informacija sėkmingai atnaujinta!",
-            status: "success",
-            position: "top-right",
-            duration: 2000,
-            isClosable: true,
-          });
-          router.push("/");
-        } else {
-          toast({
-            title: "Įvyko klaida! Bandykite iš naujo.",
-            status: "error",
-            position: "top-right",
-            duration: 2000,
-            isClosable: true,
-          });
+            if (response.status === 200) {
+              setRefresh(!refresh);
+              toast({
+                title: "Paskyros informacija sėkmingai atnaujinta!",
+                status: "success",
+                position: "top-right",
+                duration: 2000,
+                isClosable: true,
+              });
+              router.push("/");
+            } else {
+              toast({
+                title: "Įvyko klaida! Bandykite iš naujo.",
+                status: "error",
+                position: "top-right",
+                duration: 2000,
+                isClosable: true,
+              });
+            }
+          }
         }
       }
     } else {
