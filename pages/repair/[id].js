@@ -59,8 +59,8 @@ export default function Repair() {
     cost: 9.99,
   });
   const [newTask, setNewTask] = useState({
-    title: "Senojo stikliuko nuėmimas",
-    description: "Nuimamas senasis dužęs telefono stikliukas",
+    title: "Baterijos išėmimas",
+    description: "Išimti senąją telefono bateriją",
   });
   const [repairErrors, setRepairErrors] = useState({
     title: "",

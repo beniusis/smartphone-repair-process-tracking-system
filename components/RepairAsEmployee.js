@@ -31,8 +31,8 @@ export default function RepairAsEmployee() {
   const [isLoading, setIsLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [newRepairData, setNewRepairData] = useState({
-    title: "Priekinės kameros keitimas",
-    total_cost: "50",
+    title: "Baterijos keitimas",
+    total_cost: "25",
     fk_user_client: 0,
   });
   const [refresh, setRefresh] = useState(false);
